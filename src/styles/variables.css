@@ -1,0 +1,50 @@
+:root {
+  /* Palette principale */
+  --color-primary: #0f9b8e;          /* Verde marino — accento principale */
+  --color-primary-light: #4ecdc4;    /* Hover, highlight */
+  --color-primary-dark: #0a7a6f;     /* Active, pressed */
+  --color-primary-bg: #e6f7f5;       /* Background leggero tinted */
+
+  /* Neutrali */
+  --color-bg: #fafcfb;               /* Background pagina */
+  --color-surface: #ffffff;          /* Card, modale */
+  --color-text: #1a2e2a;             /* Testo principale */
+  --color-text-secondary: #5a7a74;   /* Testo secondario */
+  --color-border: #d1e3df;           /* Bordi, divisori */
+
+  /* Semantici */
+  --color-success: #27ae60;
+  --color-warning: #f39c12;
+  --color-danger: #e74c3c;
+
+  /* Heatmap — scala da vuoto a pieno */
+  --heatmap-0: #ebedf0;
+  --heatmap-1: #b2dfdb;
+  --heatmap-2: #4ecdc4;
+  --heatmap-3: #0f9b8e;
+  --heatmap-4: #0a7a6f;
+
+  /* Tipografia */
+  --font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+
+  /* Spaziature */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Raggi */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Ombre */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+}

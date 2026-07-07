@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Ogni utente accede solo al proprio sotto-albero users/{uid}.
+    // request.auth.uid e' l'uid di chi effettua la richiesta:
+    // se non coincide con l'uid nel path, la richiesta viene negata.
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // La wildcard {document=**} copre tutte le sottocollezioni con una sola
+      // regola: habits, completions, goals, diary.
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
