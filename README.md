@@ -26,19 +26,13 @@ In alternativa si può creare un account nuovo dalla schermata di registrazione.
 
 Serve **Node.js 18+** e npm.
 
-1. Clona il repo.
+1. Clona il repo, installa .env.local.
 2. Installa le dipendenze:
    ```bash
    npm install
    ```
-3. Copia `.env.example` in `.env.local` e riempi le variabili con la configurazione del
-   tuo progetto Firebase e la chiave Gemini:
-   - La `firebaseConfig` si trova in: **Console Firebase → Impostazioni progetto → Le tue
-     app → Configurazione SDK**.
-   - La chiave Gemini si genera su **https://aistudio.google.com/app/apikey**.
-   - `.env.local` è ignorato da git (`*.local` nel `.gitignore`): le chiavi non finiscono
-     nel repository. In fase di consegna il file `.env` viene allegato alla mail.
-4. Avvia il server di sviluppo:
+
+3. Avvia il server di sviluppo:
    ```bash
    npm run dev
    ```
@@ -93,7 +87,7 @@ Di seguito tre percorsi di esempio per vedere le funzionalità.
    attivi e interessi (quando non hai obiettivi attivi arriva invece da una lista locale di
    autori di pubblico dominio).
 
-## PWA: installazione, offline, notifiche e verifica
+## PWA: installazione, offline, notifiche.
 
 L'app è una Progressive Web App. Il service worker e il manifest vengono generati in fase
 di build; la PWA è attiva sulla versione compilata (produzione o `npm run preview`), non
@@ -112,10 +106,6 @@ Firestore e sincronizzate quando la rete torna disponibile.
 browser chiede il permesso in quel momento) e scegli un orario; con **Invia una notifica di
 prova** verifichi subito che funzionino. Il promemoria è una notifica locale: scatta
 all'orario impostato mentre l'app è aperta o installata e si ripianifica per il giorno dopo.
-
-**Verifica.** Da Chrome DevTools: *Application → Manifest* mostra nome, icone e
-`display: standalone`; *Application → Service Workers* mostra il worker attivo; un giro di
-*Lighthouse* (categoria PWA) conferma installabilità e presenza del service worker.
 
 ## Deploy
 
