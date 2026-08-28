@@ -1,10 +1,11 @@
-// Inizializzazione di Firebase con la config dalle variabili d'ambiente Vite, non
-// hardcodata. La config e' pubblica per natura (finisce nel bundle): la sicurezza sta
-// nelle Security Rules, non nel nasconderla.
+// Inizializzazione di Firebase con la config dalle variabili d'ambiente Vite.
+// Config pubblica lato client; l'isolamento dei dati e' demandato alle Security Rules.
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,6 +18,12 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Persistenza offline: disattiva di default, senza si perde tutto al refresh.
+// persistentMultipleTabManager = cache condivisa fra schede (altrimenti
+// 'failed-precondition'). initializeFirestore + localCache al posto di
+// enableIndexedDbPersistence, deprecata in v11.
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+});
 
 export const isFirebaseReady = () => Boolean(app);

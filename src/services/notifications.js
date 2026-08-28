@@ -20,13 +20,14 @@ export async function requestPermission() {
   return Notification.requestPermission();
 }
 
-// Mostro la notifica dal service worker se disponibile (necessario per la PWA
-// installata); se il SW non e' pronto (es. in dev) ripiego sul costruttore.
+// Dal service worker se c'e' (serve alla PWA installata), altrimenti dal
+// costruttore. getRegistration() e non ready: senza SW registrato ready non si
+// risolve mai e la funzione resta appesa (caso di npm run dev).
 export async function showNotification(title, options = {}) {
   if (permissionStatus() !== 'granted') return false;
   const opts = { icon: '/icon-192.png', badge: '/icon-192.png', ...options };
   try {
-    const reg = await navigator.serviceWorker?.ready;
+    const reg = await navigator.serviceWorker?.getRegistration();
     if (reg) {
       await reg.showNotification(title, opts);
       return true;

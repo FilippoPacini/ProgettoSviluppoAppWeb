@@ -12,8 +12,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { toISODate } from '../utils/dateUtils';
 
-// Se Firestore non risponde (es. database non creato) l'operazione resterebbe appesa:
-// la avvolgo in un timeout che rigetta con un messaggio chiaro.
+// Timeout: senza, con Firestore non raggiungibile l'operazione resta appesa.
 const FS_TIMEOUT_MS = 12000;
 const FS_TIMEOUT_MSG =
   'Database non raggiungibile. Verifica di aver creato Firestore nel progetto Firebase e pubblicato le Security Rules.';
@@ -34,8 +33,7 @@ export async function login(email, password) {
 export async function register(email, password, displayName) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName });
-  // Documento utente iniziale. Col timeout, se Firestore non risponde l'utente
-  // vede un errore chiaro invece di un pulsante bloccato.
+  // Documento utente iniziale.
   await withTimeout(
     setDoc(doc(db, 'users', cred.user.uid), {
       email,
@@ -65,9 +63,8 @@ export function observeAuth(callback) {
   });
 }
 
-// Unisco i dati di Auth con il documento Firestore. La lettura del profilo non deve
-// bloccare l'accesso: se fallisce o va in timeout restituisco i dati base, il profilo
-// arriva poi via onSnapshot.
+// Auth + documento Firestore. Se la lettura fallisce torno i dati base: il profilo
+// arriva comunque via onSnapshot.
 async function hydrateUser(fbUser) {
   let data = {};
   try {
@@ -80,8 +77,7 @@ async function hydrateUser(fbUser) {
   } catch (err) {
     console.warn('hydrateUser: profilo non letto,', err.message);
   }
-  // createdAt su Firestore e' un Timestamp: lo porto a stringa 'YYYY-MM-DD' cosi
-  // formatLong (che si aspetta una data ISO) lo mostra correttamente nel profilo.
+  // createdAt e' un Timestamp: lo porto a 'YYYY-MM-DD' per formatLong.
   const createdAt = data.createdAt?.toDate
     ? toISODate(data.createdAt.toDate())
     : (typeof data.createdAt === 'string' ? data.createdAt : toISODate(new Date()));
