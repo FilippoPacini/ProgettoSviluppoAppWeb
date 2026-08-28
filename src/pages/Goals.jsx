@@ -18,6 +18,30 @@ const FILTERS = [
   { key: 'failed', label: 'Scaduti' },
 ];
 
+// Guida rapida del pulsante info: i due modi di avanzare sono blocchi separati.
+const GUIDE = [
+  {
+    titolo: 'Un obiettivo e\' un traguardo con una scadenza',
+    testo: 'Scegli quante volte vuoi fare qualcosa entro una data.',
+  },
+  {
+    titolo: 'Collegato a un\'abitudine: avanza da solo',
+    testo: 'Ogni volta che spunti "Correre 10 minuti", l\'obiettivo sale di uno. Il totale e\' sempre un multiplo di quell\'abitudine: 30 volte da 10 minuti sono 300 minuti. Non devi aggiornare niente.',
+  },
+  {
+    titolo: 'Non collegato: lo aggiorni tu',
+    testo: 'Sulla card compare "Aggiorna progresso": scrivi a che punto sei, quando vuoi.',
+  },
+  {
+    titolo: 'In corso, completato o scaduto',
+    testo: 'Cambia da solo quando raggiungi il target o quando passa la scadenza.',
+  },
+  {
+    titolo: 'Un esempio completo',
+    testo: 'L\'abitudine "Camminata 30 minuti" collegata all\'obiettivo "30 camminate entro il 30 giugno". Spunti la camminata sulla Dashboard e la barra si muove.',
+  },
+];
+
 const emptyForm = () => ({
   title: '',
   description: '',
@@ -27,15 +51,28 @@ const emptyForm = () => ({
   linkedHabitId: '', // '' = obiettivo manuale
 });
 
+// Con abitudine collegata l'unita' non e' testo libero: il progresso conta
+// completamenti, quindi l'unita' e' quella dell'abitudine (o "completamenti").
+function unitForHabit(habit) {
+  if (!habit) return null;
+  return habit.measure ? habit.measure.unit : 'completamenti';
+}
+
 export function Goals() {
   const { goals, loading, addGoal, updateGoal, deleteGoal } = useGoals();
   const { habits, completions } = useHabits();
 
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [form, setForm] = useState(emptyForm());
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  // Obiettivo di cui sto aggiornando il progresso a mano (null = modale chiusa).
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [progressValue, setProgressValue] = useState('0');
+  const [progressError, setProgressError] = useState('');
 
   // Calcolo progresso/stato una volta sola per ogni obiettivo (derivati dai dati).
   const decorated = useMemo(
@@ -52,7 +89,21 @@ export function Goals() {
     [goals, completions, habits]
   );
 
-  const visible = filter === 'all' ? decorated : decorated.filter((d) => d.status === filter);
+  // Ricerca e filtro di stato si sommano: passano solo gli obiettivi che
+  // soddisfano entrambi i criteri.
+  const query = search.trim().toLowerCase();
+  const visible = useMemo(
+    () =>
+      decorated
+        .filter((d) => filter === 'all' || d.status === filter)
+        .filter((d) => query === '' || d.goal.title.toLowerCase().includes(query)),
+    [decorated, filter, query]
+  );
+
+  // Abitudine collegata scelta nel form, se c'e'.
+  const linkedHabit = habits.find((h) => h.id === form.linkedHabitId) || null;
+  const linkedUnit = unitForHabit(linkedHabit);
+  const targetNumber = Math.trunc(Number(form.targetValue)) || 0;
 
   const resetForm = () => {
     setForm(emptyForm());
@@ -70,7 +121,8 @@ export function Goals() {
       setError('Il target deve essere un numero intero maggiore di zero');
       return;
     }
-    if (!form.unit.trim()) {
+    // Con abitudine collegata l'unita' e' imposta, non c'e' niente da validare.
+    if (!linkedHabit && !form.unit.trim()) {
       setError('Specifica l\'unita\' (es. libri, km, sessioni)');
       return;
     }
@@ -84,9 +136,12 @@ export function Goals() {
       await addGoal({
         title: form.title.trim(),
         description: form.description.trim(),
-        target: { value, unit: form.unit.trim() },
+        target: { value, unit: linkedHabit ? 'volte' : form.unit.trim() },
         deadline: form.deadline,
         linkedHabitId: form.linkedHabitId || null,
+        // Fotografia della misura: se l'abitudine cambia, l'obiettivo vecchio resta
+        // quello di prima.
+        unitPerCompletion: linkedHabit?.measure ? { ...linkedHabit.measure } : null,
       });
       setModalOpen(false);
       resetForm();
@@ -98,11 +153,27 @@ export function Goals() {
     }
   };
 
-  // +1 per gli obiettivi manuali, senza superare il target.
-  const increment = (goal) => {
-    const target = goal.target?.value ?? 0;
-    const next = Math.min(target, (goal.progress || 0) + 1);
-    updateGoal(goal.id, { progress: next });
+  // Apertura della modale di aggiornamento manuale: precompilo col progresso attuale.
+  const openProgressEditor = (goal) => {
+    setEditingGoal(goal);
+    setProgressValue(String(goal.progress || 0));
+    setProgressError('');
+  };
+
+  const saveProgress = async () => {
+    if (!editingGoal) return;
+    const target = editingGoal.target?.value ?? 0;
+    const value = Number(progressValue);
+    if (!Number.isInteger(value) || value < 0) {
+      setProgressError('Scrivi un numero intero maggiore o uguale a zero');
+      return;
+    }
+    if (value > target) {
+      setProgressError(`Il progresso non puo' superare il target (${target})`);
+      return;
+    }
+    await updateGoal(editingGoal.id, { progress: value });
+    setEditingGoal(null);
   };
 
   if (loading) {
@@ -117,10 +188,31 @@ export function Goals() {
     <div className="page-container">
       <div className={styles.headerRow}>
         <div className="page-header" style={{ marginBottom: 0 }}>
-          <h1>Obiettivi</h1>
+          <div className={styles.titleRow}>
+            <h1>Obiettivi</h1>
+            <button
+              className={styles.infoBtn}
+              onClick={() => setGuideOpen(true)}
+              aria-label="Come funzionano gli obiettivi"
+              title="Come funzionano gli obiettivi"
+            >
+              i
+            </button>
+          </div>
           <p>Traguardi misurabili con una scadenza. Collegane uno a un'abitudine per farlo avanzare da solo.</p>
         </div>
         <Button onClick={() => setModalOpen(true)}>+ Nuovo obiettivo</Button>
+      </div>
+
+      <div className={styles.searchRow}>
+        <input
+          className={styles.search}
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cerca un obiettivo..."
+          aria-label="Cerca un obiettivo"
+        />
       </div>
 
       <div className={styles.filters}>
@@ -138,8 +230,20 @@ export function Goals() {
       {visible.length === 0 ? (
         <EmptyState
           illustration="goals"
-          title={filter === 'all' ? 'Nessun obiettivo ancora' : 'Niente in questa categoria'}
-          text={filter === 'all' ? 'Crea il tuo primo traguardo misurabile.' : ''}
+          title={
+            query !== ''
+              ? 'Nessun obiettivo corrisponde alla ricerca'
+              : filter === 'all'
+                ? 'Nessun obiettivo ancora'
+                : 'Niente in questa categoria'
+          }
+          text={
+            query !== ''
+              ? 'Prova con un altro nome, o svuota il campo di ricerca.'
+              : filter === 'all'
+                ? 'Crea il tuo primo traguardo misurabile.'
+                : ''
+          }
         />
       ) : (
         <div className={styles.grid}>
@@ -151,12 +255,41 @@ export function Goals() {
               percent={d.percent}
               status={d.status}
               linkedHabitName={d.linkedHabitName}
-              onIncrement={increment}
+              onEditProgress={openProgressEditor}
               onDelete={deleteGoal}
             />
           ))}
         </div>
       )}
+
+      <Modal open={guideOpen} onClose={() => setGuideOpen(false)} title="Come funzionano gli obiettivi">
+        <div className={styles.guide}>
+          {GUIDE.map((blocco) => (
+            <section key={blocco.titolo} className={styles.guideBlock}>
+              <h3 className={styles.guideTitle}>{blocco.titolo}</h3>
+              <p className={styles.guideText}>{blocco.testo}</p>
+            </section>
+          ))}
+        </div>
+      </Modal>
+
+      <Modal open={!!editingGoal} onClose={() => setEditingGoal(null)} title="Aggiorna progresso">
+        {editingGoal && (
+          <>
+            <p className={styles.editTitle}>{editingGoal.title}</p>
+            <Input
+              label={`Progresso (su ${editingGoal.target?.value ?? 0} ${editingGoal.target?.unit || ''})`}
+              type="number"
+              value={progressValue}
+              onChange={(e) => setProgressValue(e.target.value)}
+              error={progressError}
+            />
+            <Button full onClick={saveProgress}>
+              Salva
+            </Button>
+          </>
+        )}
+      </Modal>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nuovo obiettivo">
         <Input
@@ -176,20 +309,34 @@ export function Goals() {
 
         <div className={styles.targetRow}>
           <Input
-            label="Target"
+            label={linkedHabit ? 'Quante volte' : 'Target'}
             type="number"
             min="1"
             step="1"
             value={form.targetValue}
             onChange={(e) => setForm((p) => ({ ...p, targetValue: e.target.value }))}
           />
+          {/* Con un'abitudine collegata il campo diventa di sola lettura: l'unita' la
+              decide l'abitudine, non l'utente. */}
           <Input
             label="Unita'"
-            value={form.unit}
+            value={linkedHabit ? linkedUnit : form.unit}
             onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))}
             placeholder="libri, km, sessioni..."
+            readOnly={Boolean(linkedHabit)}
+            disabled={Boolean(linkedHabit)}
           />
         </div>
+
+        {/* Equivalenza calcolata dal vivo: rende evidente che il totale e' sempre un
+            multiplo della misura dell'abitudine. */}
+        {linkedHabit && (
+          <p className={styles.equivalence}>
+            {linkedHabit.measure
+              ? `${targetNumber} volte × ${linkedHabit.measure.value} ${linkedHabit.measure.unit} = ${targetNumber * linkedHabit.measure.value} ${linkedHabit.measure.unit}`
+              : `${targetNumber} completamenti di "${linkedHabit.name}"`}
+          </p>
+        )}
 
         <Input
           label="Scadenza"
@@ -205,7 +352,7 @@ export function Goals() {
             value={form.linkedHabitId}
             onChange={(e) => setForm((p) => ({ ...p, linkedHabitId: e.target.value }))}
           >
-            <option value="">Manuale (avanzo io con +1)</option>
+            <option value="">Manuale</option>
             {habits.map((h) => (
               <option key={h.id} value={h.id}>
                 Collega a: {h.emoji} {h.name}
@@ -213,8 +360,9 @@ export function Goals() {
             ))}
           </select>
           <p className={styles.hint}>
-            Se lo colleghi a un'abitudine, il progresso conta i completamenti di quell'abitudine
-            fino alla scadenza.
+            Collegandolo a un'abitudine il progresso conta i completamenti di quell'abitudine
+            fino alla scadenza, e l'unita' la eredita da lei. Lasciandolo manuale, il progresso
+            lo aggiorni tu dalla card dell'obiettivo.
           </p>
         </div>
 

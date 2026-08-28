@@ -1,6 +1,5 @@
-// Il test misura due assi: approccio (analitico -/creativo +) e ritmo (costante -/
-// esplosivo +). Ogni opzione porta un 'weight' su un 'axis'; computeProfile somma i
-// pesi e sceglie l'etichetta del quadrante risultante.
+// Due assi: approccio (analitico -/creativo +) e ritmo (costante -/esplosivo +).
+// computeProfile somma i pesi e sceglie il quadrante.
 
 const LABELS = {
   'analitico-costante': {

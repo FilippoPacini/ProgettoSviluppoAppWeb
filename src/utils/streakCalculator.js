@@ -1,18 +1,15 @@
-import { today, addDays, isoWeekday } from './dateUtils';
+import { today, addDays } from './dateUtils';
+import { isScheduledOn as isScheduled } from './scheduleUtils';
 
-// La streak conta i giorni PROGRAMMATI consecutivi con l'abitudine completata (per le
-// 'custom' contano solo i giorni in habit.days, 0=lun..6=dom). I giorni non programmati
-// si saltano; un giorno programmato mancato la azzera.
+// La streak conta i giorni PROGRAMMATI consecutivi con l'abitudine completata.
+// I giorni non programmati si saltano, uno programmato e mancato la azzera.
 
-function isScheduled(habit, iso) {
-  if (!habit || habit.frequency === 'daily') return true;
-  return (habit.days || []).includes(isoWeekday(iso));
-}
-
-// Primo giorno programmato <= iso (o < iso se dal giorno prima). Limite di sicurezza.
+// Primo giorno programmato <= iso. Stop a createdAt: prima non esisteva.
+// Il tetto di 800 resta per le abitudini senza createdAt.
 function prevScheduled(habit, iso) {
   let cursor = iso;
   for (let i = 0; i < 800; i++) {
+    if (habit.createdAt && cursor < habit.createdAt) return null;
     if (isScheduled(habit, cursor)) return cursor;
     cursor = addDays(cursor, -1);
   }
@@ -33,8 +30,7 @@ export function currentStreak(habit, completions) {
   if (!habit) return 0;
   const doneOn = (iso) => Array.isArray(completions[iso]) && completions[iso].includes(habit.id);
 
-  // Se oggi e' programmato ma non ancora fatto, non azzero: comincio dal giorno
-  // programmato precedente (non "perdo" la streak solo perche' e' mattina).
+  // Oggi programmato ma non ancora fatto: parto dal precedente, non azzero.
   let cursor = prevScheduled(habit, today());
   if (isScheduled(habit, today()) && !doneOn(today())) {
     cursor = prevScheduled(habit, addDays(today(), -1));

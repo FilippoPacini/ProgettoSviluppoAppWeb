@@ -1,4 +1,5 @@
 import { toISODate, isoWeekday } from './dateUtils';
+import { scheduledHabitsOn, completedScheduledOn } from './scheduleUtils';
 
 // Traduce il rapporto (completate / totali) in uno dei 5 livelli di colore della heatmap.
 // 0 = nessuna, 4 = tutte. Le fasce intermedie seguono la scala GitHub-like.
@@ -11,9 +12,9 @@ export function intensityLevel(completed, total) {
   return 4;
 }
 
-// Costruisce la griglia di un anno come colonne di settimane (stile contribution graph).
-// Ogni colonna ha 7 celle (lun -> dom). Le celle prima del 1 gennaio o dopo oggi sono null.
-export function buildYearGrid(year, completions, totalHabits) {
+// Griglia annuale a colonne di settimane, 7 celle per colonna (lun -> dom).
+// Denominatore di ogni cella = abitudini previste QUEL giorno, non il totale.
+export function buildYearGrid(year, completions, habits) {
   const start = new Date(year, 0, 1);
   const end = new Date(year, 11, 31);
 
@@ -21,12 +22,13 @@ export function buildYearGrid(year, completions, totalHabits) {
   const cursor = new Date(start);
   while (cursor <= end) {
     const iso = toISODate(cursor);
-    const done = completions[iso] ? completions[iso].length : 0;
+    const total = scheduledHabitsOn(habits, iso).length;
+    const done = completedScheduledOn(habits, completions, iso);
     cells.push({
       date: iso,
       completed: done,
-      total: totalHabits,
-      level: intensityLevel(done, totalHabits),
+      total,
+      level: intensityLevel(done, total),
     });
     cursor.setDate(cursor.getDate() + 1);
   }

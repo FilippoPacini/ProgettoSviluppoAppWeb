@@ -14,9 +14,8 @@ export function goalProgress(goal, completions) {
   return goal.progress || 0;
 }
 
-// Stato derivato: raggiunto il target -> completato; scaduto senza raggiungerlo ->
-// fallito; altrimenti in corso. Lo stato "vero" e' sempre calcolato dai dati, cosi
-// non puo' andare fuori sincrono.
+// Stato derivato: target raggiunto -> completato, scaduto -> fallito, altrimenti
+// in corso. Calcolato dai dati, cosi non va fuori sincrono.
 export function goalStatus(goal, completions) {
   const value = goalProgress(goal, completions);
   const target = goal.target?.value ?? 0;
