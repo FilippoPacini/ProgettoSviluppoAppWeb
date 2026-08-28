@@ -1,9 +1,9 @@
-import { useContext } from 'react';
+import { use } from 'react';
 import { DataContext } from '../context/DataContext';
 
 // Fetta "diario" del DataContext.
 export function useDiary() {
-  const ctx = useContext(DataContext);
+  const ctx = use(DataContext);
   if (ctx === null) {
     throw new Error('useDiary deve essere usato dentro <DataProvider>');
   }

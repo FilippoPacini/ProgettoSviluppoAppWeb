@@ -1,15 +1,18 @@
-import { useContext, useCallback } from 'react';
+import { use, useCallback } from 'react';
 import { DataContext } from '../context/DataContext';
 import { today } from '../utils/dateUtils';
 
 // Espone la fetta "abitudini" del DataContext. La logica di CRUD e i punti di
 // integrazione Firestore vivono nel provider; qui offro l’API comoda alle pagine.
 export function useHabits() {
-  const ctx = useContext(DataContext);
+  const ctx = use(DataContext);
   if (ctx === null) {
     throw new Error('useHabits deve essere usato dentro <DataProvider>');
   }
-  const { habits, completions, loading, addHabit, updateHabit, deleteHabit, toggleCompletion } = ctx;
+  const {
+    habits, completions, loading,
+    addHabit, updateHabit, setHabitActive, deleteHabit, toggleCompletion,
+  } = ctx;
 
   const isCompleted = useCallback(
     (habitId, date = today()) =>
@@ -17,5 +20,8 @@ export function useHabits() {
     [completions]
   );
 
-  return { habits, completions, loading, addHabit, updateHabit, deleteHabit, toggleCompletion, isCompleted };
+  return {
+    habits, completions, loading,
+    addHabit, updateHabit, setHabitActive, deleteHabit, toggleCompletion, isCompleted,
+  };
 }

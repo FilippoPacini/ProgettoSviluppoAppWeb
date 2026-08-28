@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-// La preferenza del promemoria (attivo? a che ora?) e' una scelta dell'utente,
-// non un dato applicativo: la tengo in localStorage invece che su Firestore, come
-// il tema. Cosi' resta locale al dispositivo e disponibile anche offline.
+// Preferenza di dispositivo, non dato applicativo: localStorage e non Firestore.
 const KEY = 'hf_reminder';
 const DEFAULT = { enabled: false, time: '20:00' };
 

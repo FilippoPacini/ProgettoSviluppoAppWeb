@@ -1,9 +1,9 @@
-import { useContext } from 'react';
+import { use } from 'react';
 import { DataContext } from '../context/DataContext';
 
 // Fetta "obiettivi" del DataContext.
 export function useGoals() {
-  const ctx = useContext(DataContext);
+  const ctx = use(DataContext);
   if (ctx === null) {
     throw new Error('useGoals deve essere usato dentro <DataProvider>');
   }

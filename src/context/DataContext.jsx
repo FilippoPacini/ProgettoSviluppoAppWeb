@@ -1,11 +1,13 @@
-import { createContext, useState, useEffect, useCallback, useContext } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo, use, useRef } from 'react';
 import { AuthContext } from './AuthContext';
 import {
   subscribeCollection,
   addDocument,
-  setDocument,
   updateDocument,
   deleteDocument,
+  addCompletion,
+  removeCompletion,
+  removeHabitFromCompletions,
 } from '../services/firestore';
 import { today } from '../utils/dateUtils';
 
@@ -15,47 +17,82 @@ import { today } from '../utils/dateUtils';
 export const DataContext = createContext(null);
 
 export function DataProvider({ children }) {
-  const { user } = useContext(AuthContext);
+  // use() legge il context; non e' un hook, quindi puo' stare dentro if e cicli.
+  const { user } = use(AuthContext);
   const [habits, setHabits] = useState([]);
   const [completionsList, setCompletionsList] = useState([]);
   const [goals, setGoals] = useState([]);
   const [diary, setDiary] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Collezioni di cui aspetto il primo snapshot prima di chiudere loading: con le
+  // sole abitudini, un array vuoto di obiettivi sarebbe ambiguo.
+  const pending = useRef(new Set());
 
   useEffect(() => {
     if (!user?.uid) {
       setHabits([]); setCompletionsList([]); setGoals([]); setDiary([]);
+      pending.current = new Set();
       setLoading(false);
       return;
     }
+    const uid = user.uid;
+    pending.current = new Set(['habits', 'completions', 'goals', 'diary']);
     setLoading(true);
+
+    // Chiude loading quando tutte e quattro sono arrivate (partono in parallelo).
+    const markArrived = (name) => {
+      if (!pending.current.delete(name)) return;
+      if (pending.current.size === 0) setLoading(false);
+    };
+
     // Una subscribeCollection per collezione; le unsubscribe si chiamano nel cleanup.
     // Dipendo da user?.uid, non dall'intero user (che cambia a ogni update del documento).
-    const uid = user.uid;
+    const subscribe = (name, setter) =>
+      subscribeCollection(uid, name, (rows) => {
+        setter(rows);
+        markArrived(name);
+      });
+
     const unsubs = [
-      subscribeCollection(uid, 'habits', setHabits),
-      subscribeCollection(uid, 'completions', setCompletionsList),
-      subscribeCollection(uid, 'goals', setGoals),
-      subscribeCollection(uid, 'diary', setDiary),
+      subscribe('habits', setHabits),
+      subscribe('completions', setCompletionsList),
+      subscribe('goals', setGoals),
+      subscribe('diary', setDiary),
     ];
-    setLoading(false);
     return () => unsubs.forEach((u) => u());
   }, [user?.uid]);
 
-  // Le completions arrivano da Firestore come [{ id: 'YYYY-MM-DD', habits: [...] }].
-  // Il resto dell'app le vuole come mappa { 'YYYY-MM-DD': [...] }: la ricostruisco qui.
-  const completions = Object.fromEntries(
-    completionsList.map((c) => [c.id, c.habits || []])
+  // Da [{ id, habits }] a mappa { 'YYYY-MM-DD': [...] }. useMemo obbligatorio:
+  // altrimenti oggetto nuovo a ogni render, e tutte le memo che ne dipendono saltano.
+  const completions = useMemo(
+    () => Object.fromEntries(completionsList.map((c) => [c.id, c.habits || []])),
+    [completionsList]
   );
 
   /* ---- Abitudini + completions ---- */
 
   const addHabit = useCallback(async (habit) => {
     if (!user) return null;
-    const newHabit = { ...habit, createdAt: today() };
+    const newHabit = { ...habit, createdAt: today(), active: true, pauses: [] };
     const id = await addDocument(user.uid, 'habits', newHabit);
     return { id, ...newHabit };
   }, [user]);
+
+  // Pausa/ripresa. Alla ripresa chiudo la pausa aperta invece di cancellarla,
+  // altrimenti i conteggi passati cambierebbero.
+  const setHabitActive = useCallback(async (habitId, nextActive) => {
+    if (!user) return;
+    const habit = habits.find((h) => h.id === habitId);
+    if (!habit) return;
+    const pauses = [...(habit.pauses || [])];
+    if (nextActive) {
+      const last = pauses[pauses.length - 1];
+      if (last && last.to == null) pauses[pauses.length - 1] = { ...last, to: today() };
+    } else {
+      pauses.push({ from: today(), to: null });
+    }
+    await updateDocument(user.uid, 'habits', habitId, { active: nextActive, pauses });
+  }, [user, habits]);
 
   const updateHabit = useCallback(async (habitId, patch) => {
     if (!user) return;
@@ -65,33 +102,29 @@ export function DataProvider({ children }) {
   const deleteHabit = useCallback(async (habitId) => {
     if (!user) return;
     await deleteDocument(user.uid, 'habits', habitId);
-    // Pulisco i riferimenti all'abitudine anche nelle completions.
-    for (const c of completionsList) {
-      const filtered = (c.habits || []).filter((id) => id !== habitId);
-      if (filtered.length === 0) await deleteDocument(user.uid, 'completions', c.id);
-      else await updateDocument(user.uid, 'completions', c.id, { habits: filtered });
-    }
+    // Ripulisco le completions solo nei giorni in cui compare, in batch.
+    const dates = completionsList
+      .filter((c) => (c.habits || []).includes(habitId))
+      .map((c) => c.id);
+    if (dates.length > 0) await removeHabitFromCompletions(user.uid, habitId, dates);
   }, [user, completionsList]);
 
+  // Doc-id = data ISO. Operatori atomici, non riscrittura dell'array.
+  // Un documento con array vuoto resta: cancellarlo sarebbe un caso speciale inutile.
   const toggleCompletion = useCallback(async (habitId, date = today()) => {
     if (!user) return;
-    const current = completions[date] || [];
-    const next = current.includes(habitId)
-      ? current.filter((id) => id !== habitId)
-      : [...current, habitId];
-    // Doc-id = data ISO. Se il giorno resta senza completate, cancello il documento.
-    if (next.length === 0) await deleteDocument(user.uid, 'completions', date);
-    else await setDocument(user.uid, 'completions', date, { habits: next });
+    const done = (completions[date] || []).includes(habitId);
+    if (done) await removeCompletion(user.uid, date, habitId);
+    else await addCompletion(user.uid, date, habitId);
   }, [user, completions]);
 
   /* ---- Obiettivi ---- */
 
   const addGoal = useCallback(async (goal) => {
     if (!user) return null;
-    // createdAt serve a contare i completamenti degli obiettivi collegati a
-    // un'abitudine dall'inizio dell'obiettivo. progress e' usato solo dagli
-    // obiettivi manuali. Lo stato mostrato e' comunque derivato dai dati.
-    const newGoal = { ...goal, progress: 0, createdAt: today(), status: 'active' };
+    // createdAt: da qui contano i completamenti dei collegati. progress solo per i
+    // manuali. Lo stato non si salva, e' derivato con goalStatus(): una verita' sola.
+    const newGoal = { ...goal, progress: 0, createdAt: today() };
     const id = await addDocument(user.uid, 'goals', newGoal);
     return { id, ...newGoal };
   }, [user]);
@@ -125,6 +158,7 @@ export function DataProvider({ children }) {
     completions,
     addHabit,
     updateHabit,
+    setHabitActive,
     deleteHabit,
     toggleCompletion,
     goals,
@@ -136,5 +170,6 @@ export function DataProvider({ children }) {
     deleteEntry,
   };
 
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
+  // Da React 19 il context stesso fa da provider: niente piu' <DataContext.Provider>.
+  return <DataContext value={value}>{children}</DataContext>;
 }

@@ -11,9 +11,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // observeAuth (onAuthStateChanged) reagisce a login/logout e al reload, e
-    // ritorna la unsubscribe usata nel cleanup. Il merge preserva il displayName
-    // gia' in stato: un hydrate senza nome non deve azzerarlo.
+    // observeAuth reagisce a login/logout/reload e ritorna la unsubscribe.
+    // Il merge preserva il displayName gia' in stato.
     const unsub = authService.observeAuth((u) => {
       setUser((prev) => {
         if (!u) return null;    // logout
@@ -25,14 +24,13 @@ export function AuthProvider({ children }) {
     return () => unsub();
   }, []);
 
-  // Tengo i campi del documento utente (profile, dailyReport, dailyQuote) sempre
-  // aggiornati in tempo reale. Si ri-sottoscrive solo quando cambia l'uid, non a
-  // ogni merge.
+  // profile, dailyReport e dailyQuote in tempo reale. Ri-sottoscrizione solo
+  // al cambio di uid.
   useEffect(() => {
     if (!user?.uid) return;
     const unsub = subscribeUserDoc(user.uid, (data) => {
-      // createdAt lo escludo dal merge (gia' normalizzato a stringa ISO in hydrateUser);
-      // displayName lo tengo dallo stato e uso il documento solo come fallback.
+      // createdAt gia' normalizzato in hydrateUser; displayName dal documento solo
+      // come fallback.
       const { createdAt, displayName, ...rest } = data;
       setUser((prev) =>
         prev
@@ -71,8 +69,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  // Salvo il profilo su Firestore e aggiorno lo stato (spread). Se il salvataggio
-  // fallisce rilancio l'errore senza toccare lo stato, cosi la pagina puo' avvisare.
+  // Se il salvataggio fallisce rilancio senza toccare lo stato.
   const completeProfile = useCallback(async (profile) => {
     if (!user) return;
     await saveProfile(user.uid, profile);
@@ -81,5 +78,6 @@ export function AuthProvider({ children }) {
 
   const value = { user, loading, login, register, logout, completeProfile };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Da React 19 il context stesso fa da provider: niente piu' <AuthContext.Provider>.
+  return <AuthContext value={value}>{children}</AuthContext>;
 }
