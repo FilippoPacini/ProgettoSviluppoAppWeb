@@ -6,20 +6,19 @@ import { useDiary } from '../../hooks/useDiary';
 import { requestPersonalQuote, buildUserSnapshot } from '../../services/gemini';
 import { setDailyQuote } from '../../services/firestore';
 import { quotes } from '../../data/quotes';
+import { goalStatus } from '../../utils/goalUtils';
 import { today } from '../../utils/dateUtils';
 import styles from './DailyQuoteCard.module.css';
 
-// Citazione del giorno: senza obiettivi attivi la pesco dalla lista locale di filosofi
-// (nessuna chiamata AI); con obiettivi attivi chiedo a Gemini una frase originale su
-// misura. Generata una volta al giorno e salvata su Firestore.
+// Citazione del giorno: senza obiettivi attivi pesco dalla lista locale (nessuna
+// chiamata AI), con obiettivi attivi la chiedo a Gemini. Una al giorno, su Firestore.
 export function DailyQuoteCard() {
   const { user } = useAuth();
   const { habits, completions } = useHabits();
   const { goals, loading: goalsLoading } = useGoals();
   const { diary } = useDiary();
   const [busy, setBusy] = useState(false);
-  // Guardia sincrona via ref: evita la doppia generazione (e doppia chiamata AI)
-  // quando l'effect parte due volte in StrictMode.
+  // Guardia sincrona: in StrictMode l'effect parte due volte.
   const genRef = useRef(false);
 
   const oggi = today();
@@ -33,11 +32,11 @@ export function DailyQuoteCard() {
     genRef.current = true;
     setBusy(true);
     try {
-      const activeGoals = goals.filter((g) => g.status === 'active');
+      // Stato derivato, non il campo salvato: completati e scaduti non sono attivi.
+      const activeGoals = goals.filter((g) => goalStatus(g, completions) === 'active');
       let quoteToSave = null;
 
-      // Con obiettivi attivi provo la frase AI personalizzata; se l'AI non risponde
-      // (es. chiave Gemini assente) NON lascio la card vuota: ripiego sul locale.
+      // Se l'AI non risponde (es. chiave assente) ripiego sul locale.
       if (activeGoals.length > 0) {
         try {
           const snap = buildUserSnapshot({
@@ -71,9 +70,8 @@ export function DailyQuoteCard() {
     }
   };
 
-  // Generazione automatica una volta al giorno, ma solo dopo che gli obiettivi
-  // sono stati caricati: cosi la scelta locale/AI usa i dati veri, non lo stato
-  // iniziale vuoto.
+  // Una volta al giorno, ma solo a obiettivi caricati: la scelta locale/AI ha
+  // bisogno dei dati veri.
   useEffect(() => {
     if (!user || isFresh || goalsLoading) return;
     generate(false);
@@ -81,14 +79,15 @@ export function DailyQuoteCard() {
   }, [user?.uid, oggi, isFresh, goalsLoading]);
 
   if (busy && !cached?.text) {
-    return <div className={styles.card}>Cerco la citazione giusta per oggi...</div>;
+    return <p className={styles.placeholder}>Cerco la citazione giusta per oggi...</p>;
   }
   if (!cached?.text) return null;
 
   return (
-    <div className={styles.card}>
-      <div className={styles.head}>
-        <h3>Citazione del giorno</h3>
+    <figure className={styles.block}>
+      <blockquote className={styles.quote}>“{cached.text}”</blockquote>
+      <figcaption className={styles.meta}>
+        {cached.author && <span className={styles.author}>— {cached.author}</span>}
         <button
           className={styles.refresh}
           onClick={() => generate(true)}
@@ -98,10 +97,8 @@ export function DailyQuoteCard() {
         >
           {busy ? '...' : '↻'}
         </button>
-      </div>
-      <blockquote className={styles.quote}>"{cached.text}"</blockquote>
-      {cached.author && <span className={styles.author}>— {cached.author}</span>}
-    </div>
+      </figcaption>
+    </figure>
   );
 }
 

@@ -1,8 +1,7 @@
 import { Illustration } from './Illustration';
 import styles from './EmptyState.module.css';
 
-// Stato vuoto riutilizzabile: illustrazione + titolo + testo (+ eventuale azione).
-// Rende le pagine vuote piu' accoglienti e guida l'utente al primo passo.
+// Gestione UI stato vuoto: illustrazione + titolo + testo (+ eventuale azione).
 export function EmptyState({ illustration = 'goals', title, text, children }) {
   return (
     <div className={styles.wrap}>

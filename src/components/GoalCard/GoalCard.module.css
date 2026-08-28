@@ -107,7 +107,7 @@
   font-size: var(--font-size-sm);
 }
 .completeBtn:hover {
-  background-color: #d0f0ec;
+  background-color: var(--color-primary-hover);
 }
 
 .deleteBtn {
@@ -116,4 +116,12 @@
 }
 .deleteBtn:hover {
   opacity: 1;
+}
+
+/* Lettura in unita' fisiche sotto la barra di progresso. */
+.equivalence {
+  margin-top: calc(-1 * var(--spacing-xs));
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }

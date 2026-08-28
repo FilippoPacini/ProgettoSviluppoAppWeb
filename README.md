@@ -26,13 +26,19 @@ In alternativa si può creare un account nuovo dalla schermata di registrazione.
 
 Serve **Node.js 18+** e npm.
 
-1. Clona il repo, installa .env.local.
+1. Clona il repo.
 2. Installa le dipendenze:
    ```bash
    npm install
    ```
-
-3. Avvia il server di sviluppo:
+3. Copia `.env.example` in `.env.local` e riempi le variabili con la configurazione del
+   tuo progetto Firebase e la chiave Gemini:
+   - La `firebaseConfig` si trova in: **Console Firebase → Impostazioni progetto → Le tue
+     app → Configurazione SDK**.
+   - La chiave Gemini si genera su **https://aistudio.google.com/app/apikey**.
+   - `.env.local` è ignorato da git (`*.local` nel `.gitignore`): le chiavi non finiscono
+     nel repository. In fase di consegna il file `.env` viene allegato alla mail.
+4. Avvia il server di sviluppo:
    ```bash
    npm run dev
    ```
@@ -61,12 +67,12 @@ Di seguito tre percorsi di esempio per vedere le funzionalità.
 4. Riapri **Obiettivi**: la barra di avanzamento dell'obiettivo si è mossa da sola. Il
    progresso di un obiettivo collegato conta i completamenti di quell'abitudine tra la
    creazione e la scadenza — non devi aggiornarlo a mano. (Gli obiettivi *manuali*, non
-   collegati, si avanzano invece con il pulsante **+1**.)
+   collegati, si aggiornano invece a mano dal pulsante **Aggiorna progresso** sulla card.)
 
 ### Caso d'uso 2 — Imposta 3 obiettivi e "senti" cosa dice il coach
 
 1. In **Obiettivi** creane tre, per esempio:
-   - `Leggere 10 libri` → Target `10` / `libri`, **Manuale** (avanzi tu con +1 a libro finito)
+   - `Leggere 10 libri` → Target `10` / `libri`, **Manuale** (aggiorni tu il progresso a libro finito)
    - `30 giorni di camminata` → collegato all'abitudine *Camminata 30 minuti*
    - `Meditare 20 volte questo mese` → collegato all'abitudine *Meditazione*
 2. Vai su **Coach** e tocca il suggerimento rapido **"I miei obiettivi sono realistici?"**
@@ -87,7 +93,7 @@ Di seguito tre percorsi di esempio per vedere le funzionalità.
    attivi e interessi (quando non hai obiettivi attivi arriva invece da una lista locale di
    autori di pubblico dominio).
 
-## PWA: installazione, offline, notifiche.
+## PWA: installazione, offline, notifiche e verifica
 
 L'app è una Progressive Web App. Il service worker e il manifest vengono generati in fase
 di build; la PWA è attiva sulla versione compilata (produzione o `npm run preview`), non
@@ -97,15 +103,60 @@ con `npm run dev`.
 compare l'icona *Installa*. Cliccala e l'app si apre in una finestra standalone con la sua
 icona. Su Android, dal menu del browser scegli *Aggiungi a schermata Home*.
 
-**Uso offline.** Con l'app aperta (o installata), da DevTools → *Network* attiva *Offline*
-e ricarica: la pagina continua a caricarsi dalla cache del service worker e la navigazione
-tra le sezioni funziona. Le modifiche ai dati fatte offline vengono messe in coda dall'SDK
-Firestore e sincronizzate quando la rete torna disponibile.
+**Uso offline.** La persistenza di Firestore è abilitata esplicitamente in
+`src/services/firebase.js` (`initializeFirestore` con `persistentLocalCache` e
+`persistentMultipleTabManager`): di default è disattivata, e senza di essa cache e coda
+delle scritture vivrebbero solo in memoria, quindi andrebbero perse a ogni ricarica.
+`persistentMultipleTabManager` sincronizza la cache fra più schede aperte, evitando
+l'errore `failed-precondition`.
+
+La prova che conta è questa: da DevTools → *Network* attiva *Offline* e **ricarica la
+pagina**. Devi ritrovare i tuoi dati, non una schermata vuota. Le modifiche fatte offline
+restano in coda su IndexedDB e vengono sincronizzate quando la rete torna.
 
 **Notifiche.** Vai su **Profilo → Promemoria giornaliero**, attiva l'interruttore (il
 browser chiede il permesso in quel momento) e scegli un orario; con **Invia una notifica di
 prova** verifichi subito che funzionino. Il promemoria è una notifica locale: scatta
 all'orario impostato mentre l'app è aperta o installata e si ripianifica per il giorno dopo.
+
+**Verifica.** Da Chrome DevTools: *Application → Manifest* mostra nome, icone e
+`display: standalone`; *Application → Service Workers* mostra il worker attivo; un giro di
+*Lighthouse* (categoria PWA) conferma installabilità e presenza del service worker.
+
+## Scelte tecniche da segnalare
+
+**Cambiare i giorni di un'abitudine vale anche per il passato.** La heatmap dei mesi
+scorsi si ricalcola con i giorni nuovi. Tenere la storia dei giorni, come si fa per le
+pause, sarebbe la soluzione completa ed è sproporzionata rispetto al progetto: il caso
+è raro e il costo alto. Le **pause** invece hanno lo storico (`pauses: [{from, to}]`)
+proprio perché sono un'operazione ordinaria: con un semplice flag attivo/non attivo, alla
+ripresa il periodo di pausa tornerebbe a contare come giorni mancati e i dati passati
+cambierebbero da soli.
+
+**React 19: cosa si usa e cosa no.** I context usano la forma `<MyContext value={...}>`
+e `use(MyContext)`. `useOptimistic` è applicato alla sola spunta dell'abitudine: Firestore
+fa già latency compensation, quindi serve a rendere visibile il rollback quando la
+scrittura viene rifiutata, non a velocizzare il caso normale. Non sono adottati:
+
+- **React Server Components**, che richiedono un framework che li supporti (Next.js);
+  HabitForge è client-only su Vite con Firebase come backend.
+- **`useActionState` / `useFormStatus` / form actions**, pensati per form che inviano a
+  un'azione; qui i form scrivono su Firestore tramite l'SDK e hanno già stato di invio e
+  di errore.
+- **`Suspense`**, utile con letture che sospendono; le nostre sono sottoscrizioni
+  `onSnapshot`, che non sospendono, e il caricamento è già gestito dal `DataContext`.
+
+**ErrorBoundary senza dipendenze.** Le slide suggeriscono il pacchetto
+`react-error-boundary`; qui il boundary è un componente a classe di poche righe in
+`src/components/UI/ErrorBoundary.jsx`, per non aggiungere una dipendenza. Avvolge anche i
+provider, così intercetta gli errori che nascono fuori dalle pagine.
+
+**Security Rules.** Oltre al controllo di proprietà ci sono validazioni di contenuto su
+`habits` e `completions`. Due vincoli hanno guidato la scrittura: le regole si combinano
+in OR, quindi una `match /{document=**}` permissiva renderebbe inutile qualsiasi regola
+più severa (per questo ogni collezione è dichiarata esplicitamente); e si usa `hasAll()`
+sui campi obbligatori invece di `hasOnly()`, perché elencare i campi ammessi bloccherebbe
+l'app al primo campo nuovo.
 
 ## Deploy
 
@@ -125,8 +176,13 @@ Dopo il deploy l'app è raggiungibile su `https://habitforge-saw26.web.app` e
 
 **Security Rules.** `firestore.rules` isola ogni utente al proprio sotto-albero
 `users/{uid}` con la condizione `request.auth.uid == uid`: nessuno può leggere o scrivere
-i dati di un altro utente. Una sola regola con wildcard copre il documento e tutte le
-sottocollezioni.
+i dati di un altro utente. Ogni collezione è dichiarata esplicitamente invece di usare una
+wildcard, perché le regole si combinano in OR e una wildcard permissiva annullerebbe le
+validazioni di contenuto su `habits` e `completions` (vedi *Scelte tecniche da segnalare*).
+
+Le regole si pubblicano con `firebase deploy --only firestore:rules`, oppure con il
+`firebase deploy` completo qui sopra. Conviene provarle prima nel simulatore della console
+Firebase: una scrittura con `name` vuoto o `frequency` inventata deve essere negata.
 
 **Chiave Gemini.** La `VITE_GEMINI_API_KEY` finisce nel bundle client (come la config
 Firebase): la si mette in sicurezza restringendo l'origine, non nascondendola. Dalla Google
@@ -165,7 +221,7 @@ Note:
   completamenti (`src/utils/streakCalculator.js`, `src/utils/goalUtils.js`), così non
   possono andare fuori sincrono.
 - Un obiettivo con `linkedHabitId` avanza contando i completamenti dell'abitudine collegata;
-  uno *manuale* usa il campo `progress` (pulsante +1).
+  uno *manuale* usa il campo `progress`, aggiornato dal pulsante **Aggiorna progresso**.
 
 ## Struttura del progetto
 

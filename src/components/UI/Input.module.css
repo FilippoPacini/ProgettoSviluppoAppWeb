@@ -34,3 +34,12 @@
   font-size: var(--font-size-sm);
   color: var(--color-danger);
 }
+
+/* Campo il cui valore e' deciso da un'altra scelta del form: resta leggibile ma
+   segnala di non essere modificabile. */
+.input:disabled,
+.input[readonly] {
+  background-color: var(--color-bg);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}

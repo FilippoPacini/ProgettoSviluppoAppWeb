@@ -26,9 +26,8 @@ export function Coach() {
   const [draft, setDraft] = useState('');
   const scrollRef = useRef(null);
 
-  // Nessun messaggio automatico all'ingresso: la conversazione parte vuota e il
-  // primo messaggio (anche il primissimo) lo manda l'utente, cliccando uno spunto
-  // o scrivendo. Gli spunti sono solo suggerimenti: NON partono da soli.
+  // Nessun messaggio automatico: la conversazione parte vuota, gli spunti non
+  // partono da soli.
 
   // Auto-scroll in fondo a ogni nuovo messaggio.
   useEffect(() => {

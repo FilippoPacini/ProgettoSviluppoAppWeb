@@ -6,18 +6,18 @@ import styles from './HeatmapCalendar.module.css';
 const WEEKDAY_LABELS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dom'];
 
 // Contribution graph annuale: una colonna per settimana, sette celle per colonna.
-// Il colore di ogni cella riflette quante abitudini sono state completate quel giorno
-// rispetto al totale (0 -> grigio, 4 -> verde marino scuro).
-export function HeatmapCalendar({ completions, totalHabits }) {
+// Il colore di ogni cella riflette quante abitudini previste quel giorno sono state
+// completate (0 -> grigio, 4 -> verde scuro).
+export function HeatmapCalendar({ completions, habits }) {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [hovered, setHovered] = useState(null);
 
   // useMemo: la griglia è costosa da ricostruire e cambia solo se cambiano
-  // anno, completions o numero di abitudini.
+  // anno, completions o abitudini.
   const weeks = useMemo(
-    () => buildYearGrid(year, completions, totalHabits),
-    [year, completions, totalHabits]
+    () => buildYearGrid(year, completions, habits),
+    [year, completions, habits]
   );
   const months = useMemo(() => monthPositions(weeks), [weeks]);
 
@@ -88,17 +88,16 @@ export function HeatmapCalendar({ completions, totalHabits }) {
         </div>
       </div>
 
-      {/* Slot del tooltip ad altezza fissa: il riquadro col dettaglio del giorno
-          appare qui quando passi sopra una cella. Lo spazio è SEMPRE riservato,
-          così comparsa e scomparsa non spostano il resto della pagina: prima il
-          tooltip era nel flusso normale e, apparendo/sparendo, faceva "sobbalzare"
-          la vista a ogni giorno su cui passavo il mouse. */}
+      {/* Slot del tooltip ad altezza fissa: lo spazio e' sempre riservato, cosi la
+          comparsa del riquadro al passaggio del mouse non provoca reflow. */}
       <div className={styles.tooltipSlot}>
         {hovered && (
           <div className={styles.tooltip}>
             <strong>{formatLong(hovered.date)}</strong>
             <span>
-              {hovered.completed} su {hovered.total} abitudini completate
+              {hovered.total === 0
+                ? 'nessuna abitudine in programma'
+                : `${hovered.completed} su ${hovered.total} abitudini completate`}
             </span>
           </div>
         )}

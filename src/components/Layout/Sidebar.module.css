@@ -1,11 +1,15 @@
+/* Tre livelli di contrasto, ribaltati sul guscio scuro: lo sfondo e' --color-shell,
+   le voci non attive galleggiano su --color-shell-raised e la voce attiva e' una
+   pill chiara piena. Il contrasto massimo va alla pagina in cui ci si trova. */
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  background-color: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background-color: var(--color-shell);
+  border-right: 1px solid var(--color-primary-dark);
   padding: var(--spacing-lg) var(--spacing-md);
   display: flex;
   flex-direction: column;
+  transition: width 0.2s ease;
 }
 
 .nav {
@@ -18,20 +22,21 @@
 .group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-xs);
 }
 
 .groupLabel {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-text-secondary);
+  color: var(--color-on-shell-dim);
   font-weight: 700;
   padding: 0 var(--spacing-md);
   margin-bottom: var(--spacing-xs);
   opacity: 0.7;
 }
 
+/* Livello 2 - voce non attiva: staccata dallo sfondo, ma sempre dentro il guscio. */
 .link {
   position: relative;
   display: flex;
@@ -39,47 +44,75 @@
   gap: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
+  background-color: var(--color-shell-raised);
+  border: 1px solid transparent;
+  color: var(--color-on-shell);
   font-weight: 500;
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .link:hover {
-  background-color: var(--color-primary-bg);
-  color: var(--color-primary-dark);
-  transform: translateX(2px);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
-/* Icona dentro un riquadro arrotondato: sull'attivo diventa piena. */
+.linkLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Riquadro dell'icona: tinta chiara sulle voci normali, pieno su quella attiva. */
 .icon {
   display: grid;
   place-items: center;
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background-color: var(--color-primary-bg);
+  background-color: rgba(143, 217, 196, 0.16);
   font-size: 1rem;
   flex-shrink: 0;
 }
 
-/* Voce attiva: pill con sfumatura + barra-accento a sinistra. */
+/* Livello 1 - voce attiva: pill chiara piena, testo scuro, barra a sinistra. */
 .active {
-  background: linear-gradient(90deg, var(--color-primary-bg), transparent);
-  color: var(--color-primary-dark);
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-shell);
   font-weight: 700;
+}
+.active:hover {
+  color: var(--color-shell);
 }
 .active::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: -12px;
   top: 8px;
   bottom: 8px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--color-primary);
+  background: var(--color-accent);
 }
 .active .icon {
-  background: var(--color-primary);
+  background: var(--color-shell);
+  animation: iconPulse 2.4s ease-in-out infinite;
+}
+
+/* L'icona della sezione corrente "respira": scala minima, nessuno spostamento del
+   layout perche' il riquadro ha dimensioni fisse. */
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+  .active .icon {
+    animation: none;
+  }
 }
 
 /* Blocco utente in fondo alla sidebar: avatar con iniziali + nome + email. */
@@ -90,13 +123,13 @@
   margin-top: var(--spacing-md);
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
+  border: 1px solid transparent;
+  background-color: var(--color-shell-raised);
+  color: var(--color-on-shell);
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .userBlock:hover {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary-bg);
+  border-color: var(--color-accent);
 }
 
 .avatar {
@@ -106,8 +139,8 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-shell);
   font-weight: 700;
   font-size: var(--font-size-sm);
 }
@@ -126,13 +159,53 @@
 }
 .userEmail {
   font-size: 0.72rem;
-  color: var(--color-text-secondary);
+  color: var(--color-on-shell-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Su mobile la sidebar diventa un pannello a scomparsa. */
+/* Pulsante di collasso: in fondo, sotto il blocco utente. */
+.collapseBtn {
+  align-self: flex-end;
+  margin-top: var(--spacing-sm);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--color-on-shell-dim);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+}
+.collapseBtn:hover {
+  background-color: var(--color-shell-raised);
+  color: var(--color-accent);
+}
+
+/* Rail di sole icone: spariscono etichette, gruppi e dati utente. */
+.collapsed {
+  width: 68px;
+  padding-left: var(--spacing-sm);
+  padding-right: var(--spacing-sm);
+}
+.collapsed .linkLabel,
+.collapsed .groupLabel,
+.collapsed .userMeta {
+  display: none;
+}
+.collapsed .link {
+  justify-content: center;
+  padding-left: var(--spacing-xs);
+  padding-right: var(--spacing-xs);
+  gap: 0;
+}
+.collapsed .userBlock {
+  justify-content: center;
+}
+.collapsed .collapseBtn {
+  align-self: center;
+}
+
+/* Su mobile la sidebar diventa un pannello a scomparsa e il collasso non serve. */
 @media (max-width: 860px) {
   .sidebar {
     position: fixed;
@@ -146,5 +219,23 @@
   }
   .open {
     transform: translateX(0);
+  }
+  /* La preferenza di collasso vale solo da desktop: qui la sidebar resta piena. */
+  .collapsed {
+    width: 240px;
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+  .collapsed .linkLabel,
+  .collapsed .groupLabel,
+  .collapsed .userMeta {
+    display: flex;
+  }
+  .collapsed .link {
+    justify-content: flex-start;
+    gap: var(--spacing-md);
+  }
+  .collapseBtn {
+    display: none;
   }
 }

@@ -32,7 +32,7 @@
   color: var(--color-primary-dark);
 }
 .secondary:hover:not(:disabled) {
-  background-color: #d0f0ec;
+  background-color: var(--color-primary-hover);
 }
 
 .ghost {

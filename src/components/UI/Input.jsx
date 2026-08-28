@@ -1,8 +1,11 @@
 import styles from './Input.module.css';
 
-// Campo di input controllato con etichetta e messaggio d’errore opzionale.
-// Lo tengo controllato (value + onChange) come da pattern React del corso.
-export function Input({ label, type = 'text', value, onChange, placeholder, error, name }) {
+// Campo controllato: il valore vive nello stato del padre.
+// min/step per i numerici, readOnly per i campi decisi altrove.
+export function Input({
+  label, type = 'text', value, onChange, placeholder, error, name,
+  min, step, readOnly = false, disabled = false,
+}) {
   return (
     <label className={styles.field}>
       {label && <span className={styles.label}>{label}</span>}
@@ -13,6 +16,10 @@ export function Input({ label, type = 'text', value, onChange, placeholder, erro
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        min={min}
+        step={step}
+        readOnly={readOnly}
+        disabled={disabled}
       />
       {error && <span className={styles.error}>{error}</span>}
     </label>

@@ -27,7 +27,7 @@
   line-height: 1;
 }
 .navBtn:hover:not(:disabled) {
-  background-color: #d0f0ec;
+  background-color: var(--color-primary-hover);
 }
 .navBtn:disabled {
   opacity: 0.4;
@@ -96,9 +96,8 @@
 .cell {
   cursor: pointer;
 }
-/* Hover con box-shadow invece di outline animato: la box-shadow non entra nel
-   layout (nessun reflow) e viene composta dalla GPU, quindi niente "sobbalzo"
-   della griglia quando passo da una cella all'altra. */
+/* Hover con box-shadow: non entra nel layout, quindi la griglia non si sposta
+   quando il mouse passa da una cella all'altra. */
 .cell:hover {
   box-shadow: 0 0 0 2px var(--color-primary-dark);
 }
@@ -107,8 +106,8 @@
   background-color: transparent;
 }
 
-/* Spazio riservato al tooltip: altezza fissa sempre presente, così il tooltip
-   appare "dentro" quest'area senza allungare/accorciare la pagina (fine sobbalzo). */
+/* Spazio riservato al tooltip: altezza fissa sempre presente, cosi il tooltip
+   appare dentro quest'area senza allungare o accorciare la pagina. */
 .tooltipSlot {
   min-height: 56px;
   display: flex;

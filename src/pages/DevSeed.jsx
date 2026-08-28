@@ -4,22 +4,20 @@ import { setDocument, saveProfile } from '../services/firestore';
 import { profileLabels } from '../utils/profileCalculator';
 import { toISODate } from '../utils/dateUtils';
 
-// Pagina di seed disponibile SOLO in sviluppo (import.meta.env.DEV): in produzione il
-// componente e la rotta non entrano nel bundle. Popola l'account loggato con dati dal
-// 1 gennaio 2026 a oggi, coerenti col profilo "Analitico-Costante".
+// Seed solo in sviluppo (import.meta.env.DEV): in produzione non entra nel bundle.
+// Popola l'account con dati dal 1 gennaio 2026 a oggi.
 
 // I giorni sono 0=lunedi ... 6=domenica, come nel resto dell'app (isoWeekday).
 const SEED_HABITS = [
-  { name: 'Leggere 20 minuti', emoji: '📚', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#4ecdc4' },
-  { name: 'Camminata 30 minuti', emoji: '🏃', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#f39c12' },
-  { name: 'Meditazione', emoji: '🧘', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#0f9b8e' },
-  { name: 'Revisione lezioni SAW', emoji: '💻', frequency: 'custom', days: [0, 2, 4], color: '#0a7a6f' }, // lun, mer, ven
-  { name: 'No social prima delle 10', emoji: '📵', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#5a7a74' },
+  { name: 'Leggere 20 minuti', emoji: '📚', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#3a7267' },
+  { name: 'Camminata 30 minuti', emoji: '🏃', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#66b0a6' },
+  { name: 'Meditazione', emoji: '🧘', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#509f94' },
+  { name: 'Revisione lezioni SAW', emoji: '💻', frequency: 'custom', days: [0, 2, 4], color: '#28463e' }, // lun, mer, ven
+  { name: 'No social prima delle 10', emoji: '📵', frequency: 'daily', days: [0, 1, 2, 3, 4, 5, 6], color: '#8cc7bf' },
 ];
 
-// Obiettivi del seed: target misurabile + scadenza. Alcuni collegati a un'abitudine
-// (progresso automatico dai completamenti), altri manuali con progress iniziale.
-// createdAt = 2026-01-01 cosi i collegati contano i completamenti dall'inizio.
+// Obiettivi del seed: alcuni collegati a un'abitudine, altri manuali.
+// createdAt = 2026-01-01 cosi i collegati contano dall'inizio.
 const SEED_GOALS = [
   {
     title: 'Leggere 10 libri nel 2026', description: 'Circa un libro al mese.',
@@ -59,9 +57,7 @@ const SEED_DIARY_TEMPLATES = [
   'Streak di camminata che continua, mi da\' soddisfazione.',
 ];
 
-// Esegue le scritture a blocchi (invece di una alla volta): molte connessioni in
-// parallelo dentro ogni blocco, cosi il seed passa da decine di secondi a pochi,
-// e tra un blocco e l'altro aggiorno la percentuale mostrata all'utente.
+// Scritture a blocchi di 'size' in parallelo, con percentuale tra un blocco e l'altro.
 async function runInChunks(items, size, worker, onProgress) {
   let done = 0;
   for (let i = 0; i < items.length; i += size) {
@@ -85,8 +81,7 @@ export function DevSeed() {
     setRunning(true);
     setDone(false);
     try {
-      // 1) Dati "strutturali" (profilo, abitudini, obiettivi, diario): poche
-      //    scritture, le mando in parallelo. Le scrivo PRIMA cosi compaiono subito.
+      // 1) Profilo, abitudini, obiettivi e diario: poche scritture, in parallelo.
       setStatus('Scrivo profilo, abitudini, obiettivi e diario...');
       const habitIds = SEED_HABITS.map((_, i) => `habit_${i}`);
       const diaryDates = [
@@ -103,9 +98,8 @@ export function DevSeed() {
         })),
       ]);
 
-      // 2) Completions dal 2026-01-01 a oggi. Prima le calcolo tutte, poi le scrivo
-      //    a blocchi con barra di avanzamento. Pattern realistico: ~85% nei feriali,
-      //    ~50% nel weekend, un calo tra il 10 e il 20 marzo.
+      // 2) Completions dal 2026-01-01 a oggi: prima le calcolo tutte, poi le scrivo
+      //    a blocchi. ~85% feriali, ~50% weekend, calo tra il 10 e il 20 marzo.
       const start = new Date('2026-01-01T00:00:00');
       const end = new Date();
       const completionDocs = [];
@@ -162,7 +156,7 @@ export function DevSeed() {
 
       {status && <p style={{ marginTop: '1rem' }}>{status}</p>}
 
-      {/* Notifica esplicita di fine seed: banner verde, non solo una riga di testo. */}
+      {/* Banner di conferma a seed concluso. */}
       {done && (
         <div
           style={{

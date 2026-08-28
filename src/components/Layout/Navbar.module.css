@@ -1,7 +1,8 @@
+/* La navbar fa parte del guscio scuro insieme alla sidebar. */
 .navbar {
   height: 60px;
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-shell);
+  border-bottom: 1px solid var(--color-primary-dark);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,7 +25,7 @@
   gap: var(--spacing-sm);
   font-weight: 700;
   font-size: var(--font-size-lg);
-  color: var(--color-text);
+  color: var(--color-on-shell);
 }
 
 .brandMark {
@@ -33,21 +34,23 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  background-color: var(--color-primary);
-  color: #fff;
+  /* Unico punto luminoso della barra: e' il marchio. */
+  background-color: var(--color-accent);
+  color: var(--color-shell);
+  font-weight: 700;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
 }
 
 .userName {
-  color: var(--color-text-secondary);
+  color: var(--color-on-shell-dim);
   font-size: var(--font-size-sm);
 }
 
 .burger {
   display: none;
   font-size: 1.5rem;
-  color: var(--color-text-secondary);
+  color: var(--color-on-shell);
 }
 
 @media (max-width: 860px) {
@@ -57,4 +60,14 @@
   .userName {
     display: none;
   }
+}
+
+/* Il bottone "Esci" e' un ghost pensato per fondo chiaro: sul guscio scuro va
+   riportato in tinta, altrimenti resta grigio su verde e si legge male. */
+.right button {
+  color: var(--color-on-shell);
+}
+.right button:hover:not(:disabled) {
+  background-color: var(--color-shell-raised);
+  color: var(--color-accent);
 }

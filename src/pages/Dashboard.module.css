@@ -1,8 +1,81 @@
+/* Hero della Dashboard: saluto grande, riga data + profilo, citazione del giorno. */
+.hero {
+  margin-bottom: var(--spacing-xl);
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-primary-dark);
+}
+
+.heroMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm) var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.heroDate {
+  color: var(--color-text-secondary);
+}
+
+/* Chip del profilo di personalita': porta al profilo, o all'onboarding se manca. */
+.profileChip {
+  padding: 2px var(--spacing-md);
+  border-radius: 999px;
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+.profileChip:hover {
+  background-color: var(--color-primary-hover);
+}
+.profileChipEmpty {
+  background-color: transparent;
+  border-style: dashed;
+  color: var(--color-text-secondary);
+}
+
+/* La scheda di oggi occupa due colonne: e' l'unica che dice cosa fare adesso. */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
+}
+
+.statsHead {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.statsTitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+}
+
+.infoBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-border);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  font-style: italic;
+}
+.infoBtn:hover {
+  background-color: var(--color-primary-hover);
 }
 
 .statCard {
@@ -102,5 +175,101 @@
   }
   .quickLinks {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Scheda principale: anello + testo affiancati. */
+.statMain {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+/* Anello di progresso in conic-gradient: nessun SVG, nessuna dipendenza.
+   --pct arriva inline dal componente. */
+.ring {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(
+    var(--color-primary) var(--pct, 0%),
+    var(--color-primary-bg) var(--pct, 0%)
+  );
+}
+
+.ringValue {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-surface);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.statNote {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.statLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.statLink:hover {
+  text-decoration: underline;
+}
+
+/* Delta rispetto ai 7 giorni precedenti: verde se sale, ambra se scende. */
+.deltaUp,
+.deltaDown {
+  margin-left: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+.deltaUp {
+  color: var(--color-success);
+}
+.deltaDown {
+  color: var(--color-warning);
+}
+
+/* Obiettivo rimasto indietro rispetto al tempo trascorso. */
+.statWarn {
+  border-color: var(--color-warning);
+}
+.statWarn .statValue {
+  color: var(--color-warning);
+}
+
+/* Guida delle statistiche dentro la modale. */
+.guideBlock + .guideBlock {
+  margin-top: var(--spacing-md);
+}
+.guideTitle {
+  font-size: var(--font-size-base);
+  color: var(--color-primary-dark);
+  margin-bottom: 2px;
+}
+.guideText {
+  color: var(--color-text-secondary);
+}
+.guide > .guideText {
+  margin-top: var(--spacing-md);
+}
+
+@media (max-width: 860px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .statMain {
+    grid-column: span 2;
   }
 }

@@ -1,53 +1,50 @@
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left: 4px solid var(--color-primary-light);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-  box-shadow: var(--shadow-sm);
+/* La citazione del giorno vive dentro la hero della Dashboard: niente riquadro e
+   niente intestazione, solo il testo in corsivo con autore e refresh sotto. */
+.block {
+  margin-top: var(--spacing-lg);
+  max-width: 62ch;
 }
 
-.head {
+.quote {
+  color: var(--color-text);
+  font-size: var(--font-size-xl);
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
 
-.head h3 {
-  font-size: var(--font-size-lg);
+.author {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
 }
 
+/* Refresh discreto: piccolo, in tinta, accanto all'autore. */
 .refresh {
-  width: 34px;
-  height: 34px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background-color: var(--color-primary-bg);
-  color: var(--color-primary-dark);
-  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
   line-height: 1;
 }
 .refresh:hover:not(:disabled) {
-  background-color: #d0f0ec;
+  background-color: var(--color-primary-hover);
+  color: var(--color-primary-dark);
 }
 .refresh:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.quote {
-  color: var(--color-text);
-  font-size: var(--font-size-lg);
-  line-height: 1.5;
-  font-style: italic;
-}
-
-.author {
-  display: block;
-  margin-top: var(--spacing-sm);
+.placeholder {
+  margin-top: var(--spacing-lg);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-style: italic;
 }

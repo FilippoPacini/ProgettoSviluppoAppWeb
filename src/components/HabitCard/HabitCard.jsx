@@ -1,27 +1,42 @@
+import { useOptimistic, startTransition } from 'react';
 import { currentStreak, reachedMilestone } from '../../utils/streakCalculator';
 import styles from './HabitCard.module.css';
 
 // Card di una singola abitudine sulla dashboard: emoji, nome, streak e checkbox
 // di completamento per oggi. La streak la calcolo qui dai completions passati come prop.
 export function HabitCard({ habit, completions, done, onToggle }) {
+  // useOptimistic: Firestore fa gia' latency compensation, quindi serve al caso
+  // opposto, cioe' il rollback visibile se la scrittura viene rifiutata.
+  const [optimisticDone, setOptimisticDone] = useOptimistic(done);
+
+  const handleToggle = () => {
+    // Dentro la transition: React tiene il valore finche' l'await non finisce.
+    startTransition(async () => {
+      setOptimisticDone(!optimisticDone);
+      await onToggle(habit.id);
+    });
+  };
+
   const streak = currentStreak(habit, completions);
   const milestone = reachedMilestone(streak);
   // Percentuale verso il traguardo dei 30 giorni: alimenta l'anello (--streak-pct).
   const pct = Math.min(100, Math.round((streak / 30) * 100));
 
   return (
-    <div className={`${styles.card} ${done ? styles.done : ''}`}>
+    <div className={`${styles.card} ${optimisticDone ? styles.done : ''}`}>
       <button
-        className={`${styles.checkbox} ${done ? styles.checked : ''}`}
-        onClick={() => onToggle(habit.id)}
-        aria-label={done ? 'Segna come non fatta' : 'Segna come fatta'}
-        style={done ? { backgroundColor: habit.color, borderColor: habit.color } : undefined}
+        className={`${styles.checkbox} ${optimisticDone ? styles.checked : ''}`}
+        onClick={handleToggle}
+        aria-label={optimisticDone ? 'Segna come non fatta' : 'Segna come fatta'}
+        style={
+          optimisticDone ? { backgroundColor: habit.color, borderColor: habit.color } : undefined
+        }
       >
-        {done && <span className={styles.tick}>✓</span>}
+        {optimisticDone && <span className={styles.tick}>✓</span>}
       </button>
 
-      {/* Arricchimento grafico: anello che si riempie con la streak (conic-gradient,
-          solo CSS). L'emoji resta al centro su un cerchio interno. */}
+      {/* Anello di progresso in conic-gradient pilotato da --streak-pct:
+          l'emoji sta al centro, su un cerchio interno. */}
       <div className={styles.streakRing} style={{ '--streak-pct': pct }}>
         <span className={styles.streakRingInner}>
           <span className={styles.emoji}>{habit.emoji}</span>

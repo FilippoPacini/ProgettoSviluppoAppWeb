@@ -15,8 +15,8 @@ export default defineConfig({
         short_name: 'HabitForge',
         description: 'Crescita personale, abitudini e coach AI',
         lang: 'it',
-        theme_color: '#0f9b8e',
-        background_color: '#fafcfb',
+        theme_color: '#1e3a34',
+        background_color: '#f2f7f5',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -28,7 +28,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Le mutazioni offline sono gia' gestite dall'SDK Firebase; qui aggiungo
+        // Le mutazioni offline sono gestite dall'SDK Firebase con la persistenza
+        // IndexedDB attivata in services/firebase.js; qui aggiungo
         // solo un caching NetworkFirst per le letture Firestore.
         runtimeCaching: [
           {

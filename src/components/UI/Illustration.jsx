@@ -1,6 +1,4 @@
-// Illustrazioni SVG inline in stile "flat": autonome, senza dipendenze esterne
-// ne' problemi di licenza, si colorano con le variabili del tema e non dipendono
-// da hosting di terzi. Ogni SVG usa currentColor e le variabili --color-* del brand.
+// Illustrazioni SVG inline: si colorano con le variabili --color-* del tema.
 
 const P = 'var(--color-primary)';
 const PL = 'var(--color-primary-light)';

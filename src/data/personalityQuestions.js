@@ -1,8 +1,7 @@
-// Test di personalita' a due fasi: prima l'utente sceglie fino a 3 settori tra 15,
-// poi riceve 9 domande pescate da quei settori (10 in tutto). Le 9 domande nascono
-// da 9 template declinati sul tema del settore, con opzioni e pesi condivisi.
-// Ogni opzione porta un 'weight' su un asse ('axis'): approccio (analitico -/creativo +)
-// e ritmo (costante -/esplosivo +); i pesi si sommano in computeProfile.
+// Test a due fasi: 3 settori scelti fra 15, poi 9 domande pescate da quei settori.
+// Le domande nascono da 10 template declinati sul tema del settore.
+// Ogni opzione pesa su un asse: approccio (analitico -/creativo +) e ritmo
+// (costante -/esplosivo +); i pesi si sommano in computeProfile.
 
 // I 15 settori. 'tema' e' la frase iniettata nei template.
 export const sectors = [
@@ -118,7 +117,7 @@ const QUESTION_TEMPLATES = [
   },
 ];
 
-// 135 domande costruite dai template. sectorQuestions[settore] = 9 domande.
+// 150 domande: 10 per settore, di cui pickQuestions ne usa al massimo 9.
 export const sectorQuestions = Object.fromEntries(
   sectors.map((s) => [
     s.id,

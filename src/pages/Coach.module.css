@@ -65,7 +65,7 @@
   white-space: nowrap;
 }
 .promptChip:hover:not(:disabled) {
-  background-color: #d0f0ec;
+  background-color: var(--color-primary-hover);
 }
 .promptChip:disabled {
   opacity: 0.5;

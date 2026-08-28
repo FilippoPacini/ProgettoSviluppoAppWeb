@@ -33,11 +33,13 @@ function initials(name) {
     .join('');
 }
 
-export function Sidebar({ open, onNavigate }) {
+export function Sidebar({ open, collapsed, onToggleCollapse, onNavigate }) {
   const { user } = useAuth();
 
   return (
-    <aside className={`${styles.sidebar} ${open ? styles.open : ''}`}>
+    <aside
+      className={`${styles.sidebar} ${open ? styles.open : ''} ${collapsed ? styles.collapsed : ''}`}
+    >
       <nav className={styles.nav}>
         {GROUPS.map((group) => (
           <div key={group.label} className={styles.group}>
@@ -48,10 +50,12 @@ export function Sidebar({ open, onNavigate }) {
                 to={item.to}
                 end={item.end}
                 onClick={onNavigate}
+                // Da collassata restano solo le icone: il title nativo dice dove porta.
+                title={collapsed ? item.label : undefined}
                 className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`}
               >
                 <span className={styles.icon}>{item.icon}</span>
-                <span>{item.label}</span>
+                <span className={styles.linkLabel}>{item.label}</span>
               </NavLink>
             ))}
           </div>
@@ -59,7 +63,12 @@ export function Sidebar({ open, onNavigate }) {
       </nav>
 
       {user && (
-        <Link to="/profile" className={styles.userBlock} onClick={onNavigate}>
+        <Link
+          to="/profile"
+          className={styles.userBlock}
+          onClick={onNavigate}
+          title={collapsed ? user.displayName : undefined}
+        >
           <span className={styles.avatar}>{initials(user.displayName)}</span>
           <span className={styles.userMeta}>
             <span className={styles.userName}>{user.displayName}</span>
@@ -67,6 +76,16 @@ export function Sidebar({ open, onNavigate }) {
           </span>
         </Link>
       )}
+
+      {/* Riduzione a rail di icone: solo su desktop, lo stato lo ricorda localStorage. */}
+      <button
+        className={styles.collapseBtn}
+        onClick={onToggleCollapse}
+        aria-label={collapsed ? 'Espandi la barra laterale' : 'Riduci la barra laterale'}
+        title={collapsed ? 'Espandi la barra laterale' : 'Riduci la barra laterale'}
+      >
+        {collapsed ? '›' : '‹'}
+      </button>
     </aside>
   );
 }

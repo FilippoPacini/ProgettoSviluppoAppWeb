@@ -4,9 +4,8 @@ import { db } from '../services/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/UI/Button';
 
-// Pagina di autodiagnosi del setup (solo in sviluppo): verifica che le variabili VITE_*
-// siano presenti e prova una scrittura/lettura/cancellazione reale su Firestore,
-// riportando l'eventuale codice d'errore. Assente in produzione.
+// Autodiagnosi del setup (solo in sviluppo): variabili VITE_* presenti e un giro
+// reale di scrittura/lettura/cancellazione su Firestore.
 
 const ENV_KEYS = [
   'VITE_FIREBASE_API_KEY',

@@ -9,9 +9,8 @@ import {
 import { Button } from '../UI/Button';
 import styles from './ReminderSettings.module.css';
 
-// Impostazioni del promemoria giornaliero. Il permesso lo chiedo solo quando
-// l'utente attiva l'interruttore o prova una notifica: cosi' la richiesta arriva
-// in un momento in cui ha senso, non a freddo all'apertura dell'app.
+// Impostazioni del promemoria. Il permesso si chiede all'attivazione, non a freddo
+// all'apertura dell'app.
 export function ReminderSettings() {
   const { pref, setEnabled, setTime } = useReminderPref();
   const [perm, setPerm] = useState(permissionStatus());

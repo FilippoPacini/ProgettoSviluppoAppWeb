@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
 import styles from './Modal.module.css';
 
-// Modale generica. Chiude su Esc e sul click nell’overlay. Uso useEffect per
-// registrare/rimuovere il listener della tastiera con cleanup, come da regola
-// degli effetti (aggiungi e togli event handler nel side effect).
+// Modale generica. Chiude su Esc e sul click nell’overlay.
+// Listener della tastiera registrato e rimosso nel cleanup dell'effect.
 export function Modal({ open, onClose, title, children }) {
   useEffect(() => {
     if (!open) return;
