@@ -54,15 +54,23 @@ abitudini di oggi; le sezioni **Abitudini**, **Obiettivi**, **Diario**, **Coach*
 
 Di seguito tre percorsi di esempio per vedere le funzionalità.
 
+Due cose utili da sapere prima di iniziare. Ogni abitudine si **modifica** (icona matita) e
+si può **mettere in pausa** (icona pausa) invece di cancellarla: i giorni di pausa non
+contano come mancati e lo storico resta quello che era. E il pulsante **i** accanto ai
+titoli di Dashboard, Abitudini e Obiettivi apre una guida breve che spiega come sono
+calcolati i numeri di quella pagina.
+
 ### Caso d'uso 1 — Collega un'abitudine a un obiettivo e guarda il progresso avanzare da solo
 
 1. Vai su **Abitudini → + Nuova abitudine** e crea *Leggere 20 minuti* (frequenza
    giornaliera).
 2. Vai su **Obiettivi → + Nuovo obiettivo** e compila:
    - **Titolo:** `Costanza nella lettura`
-   - **Target:** `30` — **Unità:** `sessioni`
-   - **Scadenza:** una data fra circa un mese
    - **Collega a:** `📚 Leggere 20 minuti`
+   - **Quante volte:** `30` — l'unità si compila da sola: `20 minuti` se l'hai indicata
+     sull'abitudine, altrimenti `completamenti`. Sotto compare l'equivalenza
+     (`30 volte × 20 minuti = 600 minuti`).
+   - **Scadenza:** una data fra circa un mese
 3. Torna in **Dashboard** e spunta *Leggere 20 minuti* per oggi.
 4. Riapri **Obiettivi**: la barra di avanzamento dell'obiettivo si è mossa da sola. Il
    progresso di un obiettivo collegato conta i completamenti di quell'abitudine tra la
@@ -207,35 +215,57 @@ a livello root oltre `users`. Le letture sono realtime (`onSnapshot`).
 users/{uid}
   ├── email, displayName, createdAt
   ├── profile      { key, name, tagline, description, interests[] }   // test di personalità
-  ├── dailyReport  { text, date }                                     // report del giorno (AI)
+  ├── dailyReport  { text, date, updatedAt, scheduledCount }          // report del giorno (AI)
   └── dailyQuote   { text, author|null, date, source: 'local'|'ai' }  // citazione del giorno
-users/{uid}/habits/{habitId}          { name, emoji, frequency, days[], color, createdAt }
+users/{uid}/habits/{habitId}          { name, emoji, frequency, days[], color, createdAt,
+                                        active, pauses[{from,to}], measure{value,unit}|null }
 users/{uid}/completions/{YYYY-MM-DD}  { habits: string[] }            // doc-id = data
 users/{uid}/goals/{goalId}            { title, description, target{value,unit}, deadline,
-                                        linkedHabitId, progress, status, createdAt }
+                                        linkedHabitId, unitPerCompletion{value,unit}|null,
+                                        progress, createdAt }
 users/{uid}/diary/{entryId}           { text, date }
 ```
 
+Campi meno ovvi:
+
+- `habits.measure` — quanto vale **un** completamento (es. `{ value: 10, unit: 'minuti' }`).
+  È facoltativo e serve agli obiettivi collegati: senza, l'obiettivo conta `completamenti`.
+- `habits.pauses` — storico delle pause, `from` incluso e `to` escluso (`to: null` = pausa
+  in corso). `active` è lo stato corrente, ridondante ma comodo per filtrare la lista senza
+  scorrere l'array a ogni render.
+- `goals.unitPerCompletion` — copia della `measure` dell'abitudine al momento della
+  creazione dell'obiettivo. È una fotografia di proposito: se l'abitudine cambia misura, un
+  obiettivo vecchio deve continuare a significare quello che significava allora.
+- `dailyReport.scheduledCount` — quante abitudini erano previste quando il report è stato
+  generato. Se il numero cambia, il testo è superato e viene rigenerato.
+
 Note:
+
 - **Streak** e **progresso/stato degli obiettivi** non sono salvati: sono derivati dai
   completamenti (`src/utils/streakCalculator.js`, `src/utils/goalUtils.js`), così non
-  possono andare fuori sincrono.
+  possono andare fuori sincrono. Per lo stesso motivo `goals` **non** ha un campo `status`:
+  lo stato lo calcola `goalStatus()` da target, progresso e scadenza.
 - Un obiettivo con `linkedHabitId` avanza contando i completamenti dell'abitudine collegata;
   uno *manuale* usa il campo `progress`, aggiornato dal pulsante **Aggiorna progresso**.
+- I campi `active`, `pauses`, `measure` e `unitPerCompletion` sono opzionali: i documenti
+  creati prima della loro introduzione continuano a funzionare senza migrazione.
 
 ## Struttura del progetto
 
 ```
 src/
-├── components/   Componenti UI e di feature (Heatmap, GoalCard, DailyReport, DailyQuote,
-│                 Reminder, Layout, UI generici…)
+├── components/   Componenti UI e di feature (Heatmap, GoalCard, HabitCard, HabitForm,
+│                 DailyReport, DailyQuote, Reminder, Layout, UI generici…)
 ├── pages/        Una pagina per route (Dashboard, Habits, Goals, Diary, Coach, Profile,
-│                 PersonalityTest, Login, Register)
-├── hooks/        Custom hooks (useAuth, useHabits, useGoals, useDiary, useCoach, useReminderPref)
-├── context/      Provider (AuthContext, DataContext, ThemeContext)
+│                 PersonalityTest, Login, Register) più DevSeed e SetupCheck, attive
+│                 solo in sviluppo
+├── hooks/        Custom hooks (useAuth, useHabits, useGoals, useDiary, useCoach,
+│                 useReminderPref, useSidebarPref)
+├── context/      Provider (AuthContext, DataContext)
 ├── services/     Backend: firebase, auth, firestore, gemini, notifications
 ├── data/         Dati statici (domande del test, citazioni locali)
-├── utils/        Funzioni pure (streak, heatmap, profilo, obiettivi, date)
+├── utils/        Funzioni pure (schedulazione, streak, heatmap, statistiche, profilo,
+│                 obiettivi, date)
 └── styles/       Stili globali e variabili del tema
 
 firestore.rules   Security Rules
