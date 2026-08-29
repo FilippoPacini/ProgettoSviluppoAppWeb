@@ -19,7 +19,9 @@ export function buildUserSnapshot({ displayName, profile, habits, completions, g
   const fatteOggi = completions[oggi] || [];
 
   return {
-    nome: displayName || null,
+    // Solo il nome proprio: col nome completo il modello scrive "Filippo Pacini" a
+    // ogni riga e sembra una lettera formale.
+    nome: displayName ? displayName.trim().split(/\s+/)[0] : null,
     profilo: profile
       ? {
           chiave: profile.key,
@@ -119,7 +121,15 @@ function buildPrompt(userSnapshot, question) {
     `Sei un coach motivazionale per l'app HabitForge. Rispondi in italiano, in 2-4 frasi. ` +
     `Scrivi in testo semplice: niente Markdown, niente asterischi, niente grassetto o corsivo, ` +
     `niente titoli e niente elenchi puntati. ` +
-    `Rivolgiti sempre all'utente col suo nome proprio ("${nome}"), mai con l'etichetta del profilo. ` +
+    // Rispondere prima alla domanda: senza questo vincolo il modello parte sempre
+    // dal suo ruolo e produce risposte intercambiabili.
+    `Rispondi PRIMA alla domanda che ti faccio, in modo diretto e specifico; solo dopo, ` +
+    `se serve, aggiungi la spinta motivazionale. ` +
+    `Non presentarti e non dire mai chi sei o qual e' il tuo compito. ` +
+    `Puoi chiamarmi "${nome}" al massimo una volta e mai come prima parola; non usare ` +
+    `l'etichetta del mio profilo. ` +
+    `Varia l'apertura rispetto a una risposta tipica e usa al massimo una metafora, ` +
+    `solo se aggiunge qualcosa: preferisci un dato concreto preso dai miei dati. ` +
     toneDirectives(profilo) +
     `Dati i miei dati ${JSON.stringify(datiVisibili)} in questo momento, ${question}`
   );
@@ -130,7 +140,12 @@ export async function callGemini(userSnapshot, question) {
   if (!apiKey) throw new Error('VITE_GEMINI_API_KEY mancante nel .env.local');
 
   const prompt = buildPrompt(userSnapshot, question);
-  const body = JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] });
+  // temperature alta e topP largo: con prompt quasi identici a ogni messaggio, i
+  // valori bassi producono risposte intercambiabili.
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 1.3, topP: 0.95 },
+  });
 
   // Un solo tentativo di retry: se l'API risponde 429 (troppe richieste, limite
   // del free tier) aspetto il ritardo suggerito da Google e riprovo una volta.
@@ -195,11 +210,12 @@ async function retryDelayMs(response) {
 // Nessuna cronologia inviata, quindi token costanti per messaggio: al modello va
 // detto di non fingere di ricordare.
 const REGOLE_CHAT =
-  '\n\nIstruzioni: se la mia domanda non riguarda abitudini, obiettivi, diario o benessere ' +
-  'personale, rispondi in una frase che non e\' il tuo campo e riporta il discorso a come sto ' +
-  'andando, senza provare comunque a rispondere nel merito. Considera questa domanda ' +
-  'indipendente dalle precedenti: non fare finta di ricordare messaggi che non vedi e, se ' +
-  'la domanda non si capisce da sola, chiedimi di riformularla.';
+  '\n\nIstruzioni: se ti faccio una domanda personale o di cortesia, rispondi in modo breve ' +
+  'e naturale, come farebbe una persona, e poi vai avanti; se ti chiedo qualcosa che non ' +
+  'riguarda abitudini, obiettivi, diario o benessere, dimmi in una frase che non e\' il tuo ' +
+  'campo senza rispondere nel merito. In entrambi i casi niente discorsi motivazionali fuori ' +
+  'luogo. Considera questa domanda indipendente dalle precedenti: non fare finta di ricordare ' +
+  'messaggi che non vedi e, se non si capisce da sola, chiedimi di riformularla.';
 
 export async function askCoachAdvice(userSnapshot, freeText) {
   return callGemini(userSnapshot, `${freeText}${REGOLE_CHAT}`);
