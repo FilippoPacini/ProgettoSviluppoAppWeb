@@ -10,8 +10,8 @@ import { Profile } from './pages/Profile';
 import { PersonalityTest } from './pages/PersonalityTest';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
 import { DevSeed } from './pages/DevSeed';
-import { SetupCheck } from './pages/SetupCheck';
 import { Spinner } from './components/UI/Spinner';
 
 // Schermata di attesa mostrata mentre Firebase controlla la sessione al primo
@@ -63,6 +63,14 @@ export function App() {
             </PublicOnlyRoute>
           }
         />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicOnlyRoute>
+              <ForgotPassword />
+            </PublicOnlyRoute>
+          }
+        />
 
         {/* Onboarding: accessibile solo da loggati, ma fuori dal Layout (schermo intero) */}
         <Route
@@ -91,7 +99,6 @@ export function App() {
           {/* Seed solo in sviluppo: in build di produzione import.meta.env.DEV
               e' false, la rotta viene eliminata e DevSeed non entra nel bundle. */}
           {import.meta.env.DEV && <Route path="/dev/seed" element={<DevSeed />} />}
-          {import.meta.env.DEV && <Route path="/dev/check" element={<SetupCheck />} />}
         </Route>
 
         {/* Qualsiasi rotta sconosciuta torna alla dashboard */}

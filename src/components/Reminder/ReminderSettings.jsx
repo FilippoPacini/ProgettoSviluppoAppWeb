@@ -14,6 +14,7 @@ import styles from './ReminderSettings.module.css';
 export function ReminderSettings() {
   const { pref, setEnabled, setTime } = useReminderPref();
   const [perm, setPerm] = useState(permissionStatus());
+  const [testMsg, setTestMsg] = useState('');
 
   if (!notificationsSupported()) {
     return (
@@ -35,16 +36,23 @@ export function ReminderSettings() {
     setEnabled(!pref.enabled);
   };
 
+  // Tag diverso a ogni invio, cosi due prove consecutive si affiancano.
   const sendTest = async () => {
+    setTestMsg('');
     let p = permissionStatus();
     if (p === 'default') p = await requestPermission();
     setPerm(p);
-    if (p === 'granted') {
-      await showNotification('HabitForge', {
-        body: 'Notifica di prova: funziona! 🎉',
-        tag: 'test',
-      });
+    if (p !== 'granted') {
+      setTestMsg('Permesso non concesso: le notifiche sono bloccate per questo sito.');
+      return;
     }
+    const ok = await showNotification('HabitForge', {
+      body: 'Notifica di prova: funziona! 🎉',
+      tag: `test-${Date.now()}`,
+    });
+    setTestMsg(ok
+      ? 'Notifica inviata. Se non la vedi, controlla le notifiche di sistema di Windows.'
+      : 'Invio non riuscito.');
   };
 
   return (
@@ -78,6 +86,8 @@ export function ReminderSettings() {
       <Button variant="secondary" onClick={sendTest}>
         Invia una notifica di prova
       </Button>
+
+      {testMsg && <p className={styles.testMsg}>{testMsg}</p>}
     </section>
   );
 }

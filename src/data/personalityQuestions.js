@@ -1,5 +1,5 @@
 // Test a due fasi: 3 settori scelti fra 15, poi 9 domande pescate da quei settori.
-// Le domande nascono da 10 template declinati sul tema del settore.
+// Le domande nascono da 9 template declinati sul tema del settore.
 // Ogni opzione pesa su un asse: approccio (analitico -/creativo +) e ritmo
 // (costante -/esplosivo +); i pesi si sommano in computeProfile.
 
@@ -13,7 +13,7 @@ export const sectors = [
   { id: 'arte', label: 'Arte', emoji: '🎨', tema: 'il disegno e l\'arte' },
   { id: 'cucina', label: 'Cucina', emoji: '🍳', tema: 'la cucina' },
   { id: 'viaggi', label: 'Viaggi', emoji: '✈️', tema: 'i viaggi' },
-  { id: 'natura', label: 'Natura', emoji: '🌿', tema: 'le attivita\' all\'aperto' },
+  { id: 'natura', label: 'Natura', emoji: '🌿', tema: 'le attività all\'aperto' },
   { id: 'cinema', label: 'Cinema', emoji: '🎬', tema: 'i film e le serie' },
   { id: 'scrittura', label: 'Scrittura', emoji: '✍️', tema: 'la scrittura' },
   { id: 'lingue', label: 'Lingue', emoji: '🗣️', tema: 'lo studio delle lingue' },
@@ -22,12 +22,31 @@ export const sectors = [
   { id: 'volontariato', label: 'Volontariato', emoji: '🤝', tema: 'il volontariato' },
 ];
 
+// I temi dei settori includono gia' l'articolo: le preposizioni 'a' e 'in' vanno
+// quindi contratte con esso ("a" + "la lettura" -> "alla lettura").
+const CONTRAZIONI = {
+  a:  { "il ": 'al ',   "lo ": 'allo ',  "la ": 'alla ',  "l'": "all'",
+        "i ": 'ai ',    "gli ": 'agli ', "le ": 'alle ' },
+  in: { "il ": 'nel ',  "lo ": 'nello ', "la ": 'nella ', "l'": "nell'",
+        "i ": 'nei ',   "gli ": 'negli ', "le ": 'nelle ' },
+};
+
+function conPreposizione(prep, tema) {
+  const mappa = CONTRAZIONI[prep];
+  for (const articolo of Object.keys(mappa)) {
+    if (tema.startsWith(articolo)) {
+      return mappa[articolo] + tema.slice(articolo.length);
+    }
+  }
+  return `${prep} ${tema}`;
+}
+
 // I 9 template. text e' una funzione del tema del settore. Le opzioni sono
 // condivise tra i settori: read-only, quindi la condivisione e' sicura.
 const QUESTION_TEMPLATES = [
   {
     axis: 'ritmo',
-    text: (t) => `Quando ti dedichi a ${t}, il tuo ritmo e'...`,
+    text: (t) => `Quando ti dedichi ${conPreposizione('a', t)}, il tuo ritmo è...`,
     options: [
       { text: 'Costante, un po\' ogni giorno', weight: -2 },
       { text: 'Regolare, con qualche picco', weight: -1 },
@@ -42,12 +61,12 @@ const QUESTION_TEMPLATES = [
       { text: 'Preparo un piano prima di partire', weight: -2 },
       { text: 'Faccio una lista veloce e aggiusto strada facendo', weight: -1 },
       { text: 'Parto e vedo dove mi porta', weight: 1 },
-      { text: 'Improvviso, e\' piu\' divertente', weight: 2 },
+      { text: 'Improvviso, è più divertente', weight: 2 },
     ],
   },
   {
     axis: 'ritmo',
-    text: (t) => `Come affronti un obiettivo grande in ${t}?`,
+    text: (t) => `Come affronti un obiettivo grande ${conPreposizione('in', t)}?`,
     options: [
       { text: 'Un po\' ogni giorno, senza fretta', weight: -2 },
       { text: 'Tappe regolari con scadenze morbide', weight: -1 },
@@ -57,7 +76,7 @@ const QUESTION_TEMPLATES = [
   },
   {
     axis: 'approccio',
-    text: (t) => `Cosa ti motiva di piu' in ${t}?`,
+    text: (t) => `Cosa ti motiva di più ${conPreposizione('in', t)}?`,
     options: [
       { text: 'Vedere progressi misurabili', weight: -2 },
       { text: 'Spuntare le cose fatte da una lista', weight: -1 },
@@ -67,19 +86,19 @@ const QUESTION_TEMPLATES = [
   },
   {
     axis: 'ritmo',
-    text: (t) => `La routine legata a ${t} per te e'...`,
+    text: (t) => `La routine legata ${conPreposizione('a', t)} per te è...`,
     options: [
       { text: 'Rassicurante, mi tiene in carreggiata', weight: -2 },
       { text: 'Utile, ma con un po\' di margine', weight: -1 },
-      { text: 'A volte noiosa, mi serve varieta\'', weight: 1 },
-      { text: 'Una gabbia, ho bisogno di liberta\'', weight: 2 },
+      { text: 'A volte noiosa, mi serve varietà', weight: 1 },
+      { text: 'Una gabbia, ho bisogno di libertà', weight: 2 },
     ],
   },
   {
     axis: 'approccio',
-    text: (t) => `Se qualcosa non funziona in ${t}, tu...`,
+    text: (t) => `Se qualcosa non funziona ${conPreposizione('in', t)}, tu...`,
     options: [
-      { text: 'Analizzo cosa e\' andato storto e correggo', weight: -2 },
+      { text: 'Analizzo cosa è andato storto e correggo', weight: -2 },
       { text: 'Rivedo il metodo con calma', weight: -1 },
       { text: 'Cambio approccio e ne provo un altro', weight: 1 },
       { text: 'Butto tutto e reinvento da zero', weight: 2 },
@@ -87,7 +106,7 @@ const QUESTION_TEMPLATES = [
   },
   {
     axis: 'approccio',
-    text: (t) => `Il tuo modo ideale di organizzarti per ${t} e'...`,
+    text: (t) => `Il tuo modo ideale di organizzarti per ${t} è...`,
     options: [
       { text: 'Tutto ordinato, ogni cosa al suo posto', weight: -2 },
       { text: 'In ordine, ma vissuto', weight: -1 },
@@ -97,9 +116,9 @@ const QUESTION_TEMPLATES = [
   },
   {
     axis: 'ritmo',
-    text: (t) => `La tua energia con ${t} durante la settimana e'...`,
+    text: (t) => `La tua energia con ${t} durante la settimana è...`,
     options: [
-      { text: 'Costante, piu\' o meno uguale ogni giorno', weight: -2 },
+      { text: 'Costante, più o meno uguale ogni giorno', weight: -2 },
       { text: 'Abbastanza regolare, con qualche picco', weight: -1 },
       { text: 'Alternata: giorni pieni e giorni scarichi', weight: 1 },
       { text: 'A ondate: quando parto non mi fermo, poi crollo', weight: 2 },
@@ -107,7 +126,7 @@ const QUESTION_TEMPLATES = [
   },
   {
     axis: 'approccio',
-    text: (t) => `Come misuri i tuoi progressi in ${t}?`,
+    text: (t) => `Come misuri i tuoi progressi ${conPreposizione('in', t)}?`,
     options: [
       { text: 'Con numeri e dati precisi', weight: -2 },
       { text: 'Con una lista di traguardi', weight: -1 },
@@ -117,7 +136,7 @@ const QUESTION_TEMPLATES = [
   },
 ];
 
-// 150 domande: 10 per settore, di cui pickQuestions ne usa al massimo 9.
+// 135 domande: 9 template per ciascuno dei 15 settori.
 export const sectorQuestions = Object.fromEntries(
   sectors.map((s) => [
     s.id,
@@ -130,18 +149,15 @@ export const sectorQuestions = Object.fromEntries(
   ])
 );
 
-// Restituisce 9 domande in base ai settori scelti (max 3): 3 per settore quando
-// sono 3, altrimenti riempie fino a 9 pescando le domande successive dei pool.
+// Le 9 domande sono sempre nove template diversi, distribuiti a rotazione sui
+// settori scelti: con tre settori ognuno contribuisce con tre domande diverse.
 export function pickQuestions(selectedSectorIds) {
   const chosen = selectedSectorIds.length > 0 ? selectedSectorIds : [sectors[0].id];
-  const perSector = Math.floor(9 / chosen.length);
-  const picked = chosen.flatMap((id) => (sectorQuestions[id] || []).slice(0, perSector));
-  let i = 0;
-  while (picked.length < 9 && i < 60) {
-    const id = chosen[i % chosen.length];
-    const extra = (sectorQuestions[id] || [])[perSector + Math.floor(i / chosen.length)];
-    if (extra && !picked.includes(extra)) picked.push(extra);
-    i++;
+  const picked = [];
+  for (let t = 0; t < 9; t++) {
+    const sectorId = chosen[t % chosen.length];
+    const q = (sectorQuestions[sectorId] || [])[t];
+    if (q) picked.push(q);
   }
-  return picked.slice(0, 9);
+  return picked;
 }

@@ -12,7 +12,7 @@ const GEMINI_ENDPOINT =
   `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 // Sottoinsieme compatto dello stato utente: mandare tutto farebbe esplodere i token.
-export function buildUserSnapshot({ displayName, profile, habits, completions, goals, diary }) {
+export function buildUserSnapshot({ displayName, profile, habits, completions, goals }) {
   const oggi = today();
   const last30 = last30DaysCompletionRate(habits, completions);
   const previsteOggi = scheduledHabitsOn(habits, oggi);
@@ -58,10 +58,6 @@ export function buildUserSnapshot({ displayName, profile, habits, completions, g
       giorniRimanenti: g.deadline ? daysBetween(oggi, g.deadline) : null,
       manuale: !g.linkedHabitId,
     })),
-    ultimeVociDiario: diary.slice(0, 3).map((e) => ({
-      data: e.date,
-      estratto: (e.text || '').slice(0, 120),
-    })),
   };
 }
 
@@ -81,7 +77,7 @@ function last30DaysCompletionRate(habits, completions) {
   };
 }
 
-// Profilo -> istruzioni di tono: senza, il modello ignora la descrizione.
+// Il profilo viene tradotto in istruzioni di tono per il modello.
 // Senza profilo torna stringa vuota e il prompt resta neutro.
 export function toneDirectives(profile) {
   if (!profile || !profile.chiave) return '';
@@ -175,8 +171,8 @@ export async function callGemini(userSnapshot, question) {
   return stripMarkdown(text);
 }
 
-// I testi vanno in <p>, non in un renderer Markdown: senza questo si vedono gli
-// asterischi. Il prompt lo chiede gia', ma un'istruzione non e' una garanzia.
+// I testi vanno in <p>, non in un renderer Markdown: rimuovo la sintassi Markdown
+// che il modello puo' comunque produrre.
 function stripMarkdown(text) {
   return text
     .replace(/```[a-z]*\n?/gi, '')      // recinti di codice

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>HabitForge — struttura del progetto</title>
+<style>
+  :root {
+    --scuro: #1e3a34;
+    --accento: #8fd9c4;
+    --sfondo: #f2f7f5;
+    --superficie: #ffffff;
+    --bordo: #d8e5e1;
+    --testo: #23302c;
+    --tenue: #6b807a;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 24px 80px;
+    background: var(--sfondo);
+    color: var(--testo);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 900px; margin: 0 auto; }
+
+  h1 { margin: 0 0 4px; font-size: 26px; color: var(--scuro); }
+  .sottotitolo { margin: 0 0 32px; color: var(--tenue); }
+
+  section {
+    background: var(--superficie);
+    border: 1px solid var(--bordo);
+    border-radius: 10px;
+    padding: 18px 22px 20px;
+    margin-bottom: 16px;
+  }
+  h2 {
+    margin: 0 0 4px;
+    font-family: var(--mono);
+    font-size: 17px;
+    color: var(--scuro);
+  }
+  .scopo { margin: 0 0 14px; color: var(--tenue); font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 5px 0; vertical-align: top; border-top: 1px solid var(--bordo); }
+  tr:first-child td { border-top: none; }
+  td.nome {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    white-space: nowrap;
+    padding-right: 20px;
+    width: 1%;
+  }
+  td.desc { color: var(--tenue); font-size: 14px; }
+  .cartella { color: var(--scuro); font-weight: 600; }
+  .nota {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--bordo);
+    color: var(--tenue);
+    font-size: 13.5px;
+  }
+  code { font-family: var(--mono); font-size: 12.5px; color: var(--scuro); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>HabitForge — struttura del progetto</h1>
+<p class="sottotitolo">React + Vite, Firebase, API Gemini. Cartella per cartella, cosa contiene ciascun file.</p>
+
+<section>
+  <h2>/ &nbsp;<span style="font-family:system-ui;font-size:14px;font-weight:400;color:var(--tenue)">radice</span></h2>
+  <p class="scopo">Configurazione, build e documentazione.</p>
+  <table>
+    <tr><td class="nome">index.html</td><td class="desc">Pagina unica in cui viene montata l'applicazione.</td></tr>
+    <tr><td class="nome">vite.config.js</td><td class="desc">Configurazione di Vite e del plugin PWA, che genera manifest e service worker.</td></tr>
+    <tr><td class="nome">package.json</td><td class="desc">Dipendenze e script: <code>dev</code>, <code>build</code>, <code>deploy</code>, <code>deploy:rules</code>.</td></tr>
+    <tr><td class="nome">firebase.json</td><td class="desc">Hosting: pubblica <code>dist/</code>, rewrite di ogni rotta su index.html.</td></tr>
+    <tr><td class="nome">firestore.rules</td><td class="desc">Security Rules: ogni utente accede solo al proprio <code>users/{uid}</code>.</td></tr>
+    <tr><td class="nome">.env.example</td><td class="desc">Elenco delle variabili da compilare in <code>.env.local</code> (chiavi Firebase e Gemini).</td></tr>
+    <tr><td class="nome">README.md</td><td class="desc">Istruzioni di avvio, credenziali di prova, modello dati.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/</h2>
+  <p class="scopo">Punto di ingresso del codice.</p>
+  <table>
+    <tr><td class="nome">main.jsx</td><td class="desc">Monta l'app e la avvolge nei due provider di stato.</td></tr>
+    <tr><td class="nome">App.jsx</td><td class="desc">Elenco delle rotte, con le guardie che separano pagine pubbliche e pagine riservate.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/pages/</h2>
+  <p class="scopo">Una pagina per ogni rotta dell'applicazione.</p>
+  <table>
+    <tr><td class="nome">Dashboard.jsx</td><td class="desc">Home: abitudini di oggi, statistiche, report e citazione del giorno.</td></tr>
+    <tr><td class="nome">Habits.jsx</td><td class="desc">Elenco delle abitudini, filtri, creazione e modifica, calendario heatmap.</td></tr>
+    <tr><td class="nome">Goals.jsx</td><td class="desc">Obiettivi misurabili, collegati a un'abitudine o aggiornati a mano.</td></tr>
+    <tr><td class="nome">Diary.jsx</td><td class="desc">Diario personale, una voce per data.</td></tr>
+    <tr><td class="nome">Coach.jsx</td><td class="desc">Conversazione con il coach AI.</td></tr>
+    <tr><td class="nome">Profile.jsx</td><td class="desc">Dati dell'account, profilo di personalità, cambio password e promemoria.</td></tr>
+    <tr><td class="nome">PersonalityTest.jsx</td><td class="desc">Test in due fasi: scelta di 3 argomenti, poi 9 domande.</td></tr>
+    <tr><td class="nome">Login.jsx</td><td class="desc">Accesso con email e password o con Google.</td></tr>
+    <tr><td class="nome">Register.jsx</td><td class="desc">Registrazione di un nuovo account.</td></tr>
+    <tr><td class="nome">ForgotPassword.jsx</td><td class="desc">Invio dell'email di reimpostazione della password.</td></tr>
+    <tr><td class="nome">DevSeed.jsx</td><td class="desc">Popola l'account demo con dati di esempio. Attiva solo in sviluppo.</td></tr>
+    <tr><td class="nome">*.module.css</td><td class="desc">Stili della pagina corrispondente. <code>Auth.module.css</code> è condiviso dalle tre schermate di accesso.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/components/</h2>
+  <p class="scopo">Componenti riusabili. Ogni cartella contiene il componente e il suo foglio di stile.</p>
+  <table>
+    <tr><td class="nome cartella">UI/</td><td class="desc">Mattoni di base: Button, Input, Modal, Spinner, ProgressBar, EmptyState, ErrorBoundary, Illustration.</td></tr>
+    <tr><td class="nome cartella">Layout/</td><td class="desc">Guscio dell'area riservata: Layout, Navbar, Sidebar, Footer.</td></tr>
+    <tr><td class="nome cartella">HabitCard/</td><td class="desc">Riquadro di una singola abitudine, con streak e spunta del giorno.</td></tr>
+    <tr><td class="nome cartella">HabitForm/</td><td class="desc">Modulo di creazione e modifica di un'abitudine.</td></tr>
+    <tr><td class="nome cartella">GoalCard/</td><td class="desc">Riquadro di un obiettivo, con barra di avanzamento e stato.</td></tr>
+    <tr><td class="nome cartella">DiaryEntry/</td><td class="desc">Singola voce del diario.</td></tr>
+    <tr><td class="nome cartella">Heatmap/</td><td class="desc">Calendario annuale a intensità di colore.</td></tr>
+    <tr><td class="nome cartella">DailyReport/</td><td class="desc">Report della giornata generato dall'AI.</td></tr>
+    <tr><td class="nome cartella">DailyQuote/</td><td class="desc">Citazione del giorno, dall'AI o dall'elenco locale.</td></tr>
+    <tr><td class="nome cartella">CoachMessage/</td><td class="desc">Singolo messaggio nella conversazione col coach.</td></tr>
+    <tr><td class="nome cartella">Profile/</td><td class="desc">ChangePassword: cambio password dalla pagina Profilo.</td></tr>
+    <tr><td class="nome cartella">Reminder/</td><td class="desc">ReminderSettings (impostazioni) e ReminderScheduler, che pianifica la notifica e non disegna nulla.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/context/</h2>
+  <p class="scopo">Stato condiviso da tutta l'applicazione, così le pagine non se lo passano a vicenda.</p>
+  <table>
+    <tr><td class="nome">AuthContext.jsx</td><td class="desc">Utente in sessione: accesso, registrazione, accesso Google, reset e cambio password, uscita.</td></tr>
+    <tr><td class="nome">DataContext.jsx</td><td class="desc">Abitudini, completamenti, obiettivi e diario, aggiornati in tempo reale da Firestore.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/hooks/</h2>
+  <p class="scopo">Scorciatoie per leggere i context e le preferenze salvate sul dispositivo.</p>
+  <table>
+    <tr><td class="nome">useAuth.js</td><td class="desc">Accesso all'utente e alle funzioni di autenticazione.</td></tr>
+    <tr><td class="nome">useHabits.js</td><td class="desc">Abitudini e completamenti.</td></tr>
+    <tr><td class="nome">useGoals.js</td><td class="desc">Obiettivi.</td></tr>
+    <tr><td class="nome">useDiary.js</td><td class="desc">Voci del diario.</td></tr>
+    <tr><td class="nome">useCoach.js</td><td class="desc">Conversazione col coach: prepara i dati e chiama Gemini.</td></tr>
+    <tr><td class="nome">useReminderPref.js</td><td class="desc">Orario del promemoria, salvato in localStorage.</td></tr>
+    <tr><td class="nome">useSidebarPref.js</td><td class="desc">Sidebar ridotta o estesa, salvata in localStorage.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/services/</h2>
+  <p class="scopo">Tutto ciò che parla con l'esterno. Il resto del codice non chiama mai Firebase direttamente.</p>
+  <table>
+    <tr><td class="nome">firebase.js</td><td class="desc">Inizializza Firebase e attiva la cache locale per il funzionamento offline.</td></tr>
+    <tr><td class="nome">auth.js</td><td class="desc">Firebase Auth: accesso, registrazione, Google, reset e cambio password.</td></tr>
+    <tr><td class="nome">firestore.js</td><td class="desc">Letture e scritture su Firestore, con ascolto in tempo reale delle collezioni.</td></tr>
+    <tr><td class="nome">gemini.js</td><td class="desc">Chiamate all'API Gemini per report, citazione e coach.</td></tr>
+    <tr><td class="nome">notifications.js</td><td class="desc">Notifiche del browser attraverso il service worker.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/utils/</h2>
+  <p class="scopo">Funzioni di calcolo pure, senza stato e senza chiamate di rete.</p>
+  <table>
+    <tr><td class="nome">dateUtils.js</td><td class="desc">Date come stringhe <code>YYYY-MM-DD</code>, formattazione e differenze.</td></tr>
+    <tr><td class="nome">scheduleUtils.js</td><td class="desc">Quali abitudini erano previste in un dato giorno. È il denominatore di tutte le percentuali.</td></tr>
+    <tr><td class="nome">streakCalculator.js</td><td class="desc">Serie di giorni consecutivi completati, contando solo i giorni previsti.</td></tr>
+    <tr><td class="nome">heatmapUtils.js</td><td class="desc">Costruisce la griglia dell'anno e assegna a ogni giorno il livello di colore.</td></tr>
+    <tr><td class="nome">goalUtils.js</td><td class="desc">Progresso e stato di un obiettivo, calcolati dai completamenti.</td></tr>
+    <tr><td class="nome">statsUtils.js</td><td class="desc">Numeri riassuntivi della dashboard.</td></tr>
+    <tr><td class="nome">profileCalculator.js</td><td class="desc">Dalle risposte del test al profilo di personalità.</td></tr>
+    <tr><td class="nome">authErrors.js</td><td class="desc">Traduce i codici di errore di Firebase in messaggi leggibili.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>src/data/ &nbsp;e&nbsp; src/styles/</h2>
+  <p class="scopo">Contenuti fissi e tema grafico.</p>
+  <table>
+    <tr><td class="nome">data/personalityQuestions.js</td><td class="desc">15 argomenti e 9 modelli di domanda, declinati sul tema scelto.</td></tr>
+    <tr><td class="nome">data/quotes.js</td><td class="desc">Citazioni di pubblico dominio, usate quando non si chiama l'AI.</td></tr>
+    <tr><td class="nome">styles/variables.css</td><td class="desc">Colori, spaziature e caratteri del tema.</td></tr>
+    <tr><td class="nome">styles/global.css</td><td class="desc">Stili di base validi su tutte le pagine.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>public/</h2>
+  <p class="scopo">File copiati senza modifiche nella cartella di pubblicazione.</p>
+  <table>
+    <tr><td class="nome">favicon.svg, icon-*.png</td><td class="desc">Icone dell'applicazione e dell'installazione come PWA.</td></tr>
+  </table>
+  <p class="nota">La cartella <code>dist/</code> non è nel repository: viene generata da <code>npm run build</code> e contiene il sito pubblicato, insieme a manifest e service worker.</p>
+</section>
+
+</main>
+</body>
+</html>

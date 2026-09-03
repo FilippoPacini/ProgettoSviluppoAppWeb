@@ -17,7 +17,6 @@ import { today } from '../utils/dateUtils';
 export const DataContext = createContext(null);
 
 export function DataProvider({ children }) {
-  // use() legge il context; non e' un hook, quindi puo' stare dentro if e cicli.
   const { user } = use(AuthContext);
   const [habits, setHabits] = useState([]);
   const [completionsList, setCompletionsList] = useState([]);
@@ -152,24 +151,44 @@ export function DataProvider({ children }) {
     await deleteDocument(user.uid, 'diary', entryId);
   }, [user]);
 
-  const value = {
-    loading,
-    habits,
-    completions,
-    addHabit,
-    updateHabit,
-    setHabitActive,
-    deleteHabit,
-    toggleCompletion,
-    goals,
-    addGoal,
-    updateGoal,
-    deleteGoal,
-    diary,
-    addEntry,
-    deleteEntry,
-  };
+  // Identita' stabile fra un render e l'altro: i consumatori si aggiornano solo
+  // quando cambia davvero uno dei valori.
+  const value = useMemo(
+    () => ({
+      loading,
+      habits,
+      completions,
+      addHabit,
+      updateHabit,
+      setHabitActive,
+      deleteHabit,
+      toggleCompletion,
+      goals,
+      addGoal,
+      updateGoal,
+      deleteGoal,
+      diary,
+      addEntry,
+      deleteEntry,
+    }),
+    [
+      loading,
+      habits,
+      completions,
+      addHabit,
+      updateHabit,
+      setHabitActive,
+      deleteHabit,
+      toggleCompletion,
+      goals,
+      addGoal,
+      updateGoal,
+      deleteGoal,
+      diary,
+      addEntry,
+      deleteEntry,
+    ]
+  );
 
-  // Da React 19 il context stesso fa da provider: niente piu' <DataContext.Provider>.
   return <DataContext value={value}>{children}</DataContext>;
 }

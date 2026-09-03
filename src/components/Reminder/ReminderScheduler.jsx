@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useReminderPref } from '../../hooks/useReminderPref';
 import { permissionStatus, showNotification } from '../../services/notifications';
 
-// Non renderizza nulla: pianifica il promemoria e si ripianifica per il giorno dopo.
-// A app chiusa servirebbe un push server (FCM), fuori scope.
+// Pianifica il promemoria giornaliero all'orario scelto dall'utente e si
+// ripianifica per il giorno successivo. Non renderizza nulla.
 export function ReminderScheduler() {
   const { pref } = useReminderPref();
 

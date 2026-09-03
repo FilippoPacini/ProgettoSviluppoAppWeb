@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useHabits } from '../../hooks/useHabits';
 import { useGoals } from '../../hooks/useGoals';
-import { useDiary } from '../../hooks/useDiary';
 import { requestPersonalQuote, buildUserSnapshot } from '../../services/gemini';
 import { setDailyQuote } from '../../services/firestore';
 import { quotes } from '../../data/quotes';
@@ -16,7 +15,6 @@ export function DailyQuoteCard() {
   const { user } = useAuth();
   const { habits, completions } = useHabits();
   const { goals, loading: goalsLoading } = useGoals();
-  const { diary } = useDiary();
   const [busy, setBusy] = useState(false);
   // Guardia sincrona: in StrictMode l'effect parte due volte.
   const genRef = useRef(false);
@@ -45,7 +43,6 @@ export function DailyQuoteCard() {
             habits,
             completions,
             goals,
-            diary,
           });
           const raw = await requestPersonalQuote(snap);
           const parsed = safeParseQuote(raw);

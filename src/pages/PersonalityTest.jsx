@@ -111,8 +111,8 @@ export function PersonalityTest() {
     return (
       <div className={styles.screen}>
         <div className={styles.card}>
-          <span className={styles.counter}>Passo 1 di 10</span>
-          <h2 className={styles.question}>Quali argomenti ti interessano di piu'?</h2>
+          <span className={styles.counter}>Argomenti</span>
+          <h2 className={styles.question}>Quali argomenti ti interessano di più?</h2>
           <p className={styles.hint}>Scegline fino a {MAX_SECTORS}: le domande successive si adatteranno.</p>
 
           <div className={styles.sectors}>
@@ -158,11 +158,21 @@ export function PersonalityTest() {
 
         <div className={styles.options}>
           {question.options.map((opt, i) => (
-            <button key={i} className={styles.option} onClick={() => choose(i)}>
+            <button
+              key={i}
+              className={`${styles.option} ${answers[question.id] === i ? styles.optionActive : ''}`}
+              onClick={() => choose(i)}
+            >
               {opt.text}
             </button>
           ))}
         </div>
+
+        {step > 0 && (
+          <button className={styles.back} onClick={() => setStep((s) => s - 1)}>
+            ← Indietro
+          </button>
+        )}
       </div>
     </div>
   );

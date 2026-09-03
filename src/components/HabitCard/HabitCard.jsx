@@ -25,7 +25,7 @@ export function HabitCard({ habit, completions, done, onToggle }) {
   return (
     <div className={`${styles.card} ${optimisticDone ? styles.done : ''}`}>
       <button
-        className={`${styles.checkbox} ${optimisticDone ? styles.checked : ''}`}
+        className={styles.checkbox}
         onClick={handleToggle}
         aria-label={optimisticDone ? 'Segna come non fatta' : 'Segna come fatta'}
         style={

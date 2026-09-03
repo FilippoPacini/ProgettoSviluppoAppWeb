@@ -8,12 +8,13 @@ import { mapAuthError } from '../utils/authErrors';
 import styles from './Auth.module.css';
 
 export function Login() {
-  const { login, loading } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [authError, setAuthError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const update = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -32,11 +33,28 @@ export function Login() {
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
+    setSubmitting(true);
     try {
       await login(form.email, form.password);
       navigate('/');
     } catch (err) {
       setAuthError(mapAuthError(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setAuthError('');
+    setSubmitting(true);
+    try {
+      const u = await loginWithGoogle();
+      // Al test di personalita' solo chi non l'ha ancora fatto.
+      navigate(u.profile ? '/' : '/onboarding');
+    } catch (err) {
+      setAuthError(mapAuthError(err));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -71,10 +89,18 @@ export function Login() {
 
         {authError && <p className={styles.formError}>{authError}</p>}
 
-        <Button full onClick={handleSubmit} disabled={loading}>
-          {loading ? 'Accesso...' : 'Accedi'}
+        <Button full onClick={handleSubmit} disabled={submitting}>
+          {submitting ? 'Accesso...' : 'Accedi'}
         </Button>
 
+        <div className={styles.divider}><span>oppure</span></div>
+        <Button variant="secondary" full onClick={handleGoogle} disabled={submitting}>
+          Continua con Google
+        </Button>
+
+        <p className={styles.switch}>
+          <Link to="/forgot-password">Password dimenticata?</Link>
+        </p>
         <p className={styles.switch}>
           Non hai un account? <Link to="/register">Registrati</Link>
         </p>

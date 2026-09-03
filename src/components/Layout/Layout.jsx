@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
@@ -18,11 +18,27 @@ export function Layout() {
   const { pathname } = useLocation();
   const showGlow = ACTIVITY_ROUTES.includes(pathname);
 
+  // Esc chiude il pannello mobile.
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setSidebarOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sidebarOpen]);
+
   return (
     <div className={styles.shell}>
       <ReminderScheduler />
       <Navbar onToggleSidebar={() => setSidebarOpen((v) => !v)} />
       <div className={styles.body}>
+        {/* Sotto gli 860px chiude la sidebar toccando il contenuto. */}
+        {sidebarOpen && (
+          <div
+            className={styles.backdrop}
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
         <Sidebar
           open={sidebarOpen}
           collapsed={collapsed}

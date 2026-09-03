@@ -63,16 +63,21 @@ export async function removeHabitFromCompletions(uid, habitId, dates) {
 // Realtime: onSnapshot notifica a ogni cambiamento della collezione.
 // Ritorna la unsubscribe, che il DataContext accumula e chiama nel cleanup.
 export function subscribeCollection(uid, name, callback) {
-  return onSnapshot(path(uid, name), (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+  return onSnapshot(
+    path(uid, name),
+    (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    // Una lettura negata dalle Security Rules finisce qui.
+    (err) => console.error(`Lettura di ${name} non riuscita:`, err.code, err.message)
+  );
 }
 
 // Realtime sul documento utente: profile, dailyReport e dailyQuote sono suoi campi.
 export function subscribeUserDoc(uid, callback) {
-  return onSnapshot(doc(db, 'users', uid), (snap) => {
-    if (snap.exists()) callback(snap.data());
-  });
+  return onSnapshot(
+    doc(db, 'users', uid),
+    (snap) => { if (snap.exists()) callback(snap.data()); },
+    (err) => console.error('Lettura del documento utente non riuscita:', err.code, err.message)
+  );
 }
 
 // Il profilo di personalita' e' un campo del documento utente, non una sottocollezione.

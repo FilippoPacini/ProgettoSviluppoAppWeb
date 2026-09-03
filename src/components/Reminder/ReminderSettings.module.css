@@ -60,3 +60,11 @@
   font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-md);
 }
+
+/* Esito dell'invio di prova. */
+.testMsg {
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}

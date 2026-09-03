@@ -8,12 +8,13 @@ import { mapAuthError } from '../utils/authErrors';
 import styles from './Auth.module.css';
 
 export function Register() {
-  const { register, loading } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [errors, setErrors] = useState({});
   const [authError, setAuthError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const update = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -32,12 +33,29 @@ export function Register() {
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
+    setSubmitting(true);
     try {
       await register(form.email, form.password, form.name.trim());
       // Nuovo utente senza profilo: lo mando subito al test di personalità (onboarding)
       navigate('/onboarding');
     } catch (err) {
       setAuthError(mapAuthError(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setAuthError('');
+    setSubmitting(true);
+    try {
+      const u = await loginWithGoogle();
+      // Al test di personalita' solo chi non l'ha ancora fatto.
+      navigate(u.profile ? '/' : '/onboarding');
+    } catch (err) {
+      setAuthError(mapAuthError(err));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -81,8 +99,13 @@ export function Register() {
 
         {authError && <p className={styles.formError}>{authError}</p>}
 
-        <Button full onClick={handleSubmit} disabled={loading}>
-          {loading ? 'Creazione...' : 'Registrati'}
+        <Button full onClick={handleSubmit} disabled={submitting}>
+          {submitting ? 'Creazione...' : 'Registrati'}
+        </Button>
+
+        <div className={styles.divider}><span>oppure</span></div>
+        <Button variant="secondary" full onClick={handleGoogle} disabled={submitting}>
+          Continua con Google
         </Button>
 
         <p className={styles.switch}>

@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component {
 
     return (
       <div className={styles.wrap}>
-        <h1 className={styles.title}>Qualcosa si e' rotto</h1>
+        <h1 className={styles.title}>Qualcosa si è rotto</h1>
         <p className={styles.text}>
           Si e' verificato un errore imprevisto. I tuoi dati sono al sicuro su Firestore:
           ricaricando la pagina dovresti ritrovare tutto al suo posto.

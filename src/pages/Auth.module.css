@@ -73,6 +73,25 @@
   text-align: center;
 }
 
+/* Separatore "oppure" fra accesso con email e accesso con Google: la riga e' un
+   bordo continuo tagliato dallo sfondo della parola al centro. */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
 /* Piccola illustrazione in cima alle schermate di login/registrazione. */
 .hero {
   display: flex;

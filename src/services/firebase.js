@@ -18,10 +18,9 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-// Persistenza offline: disattiva di default, senza si perde tutto al refresh.
-// persistentMultipleTabManager = cache condivisa fra schede (altrimenti
-// 'failed-precondition'). initializeFirestore + localCache al posto di
-// enableIndexedDbPersistence, deprecata in v11.
+// Cache locale su IndexedDB: l'app resta consultabile offline e le scritture
+// vengono sincronizzate al ritorno della rete. Il tab manager consente l'uso
+// in piu' schede contemporaneamente.
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 });

@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useHabits } from '../../hooks/useHabits';
 import { useGoals } from '../../hooks/useGoals';
-import { useDiary } from '../../hooks/useDiary';
 import { generateDailyReport, buildUserSnapshot } from '../../services/gemini';
 import { setDailyReport } from '../../services/firestore';
 import { scheduledHabitsOn } from '../../utils/scheduleUtils';
@@ -15,7 +14,6 @@ export function DailyReportCard() {
   const { user } = useAuth();
   const { habits, completions, loading: dataLoading } = useHabits();
   const { goals } = useGoals();
-  const { diary } = useDiary();
   const [loading, setLoading] = useState(false);
   // Evita che due render ravvicinati facciano partire due chiamate insieme.
   const running = useRef(false);
@@ -40,7 +38,6 @@ export function DailyReportCard() {
         habits,
         completions,
         goals,
-        diary,
       });
       const text = await generateDailyReport(snap);
       await setDailyReport(user.uid, text, oggi, previsteOggi);

@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import * as authService from '../services/auth';
 import { saveProfile, subscribeUserDoc } from '../services/firestore';
 
@@ -41,27 +41,33 @@ export function AuthProvider({ children }) {
     return () => unsub();
   }, [user?.uid]);
 
+  // 'loading' copre solo l'attesa della prima risposta di Firebase sulla sessione,
+  // quindi resta di competenza dell'effetto qui sopra. L'attesa delle singole
+  // chiamate la gestiscono le pagine.
   const login = useCallback(async (email, password) => {
-    setLoading(true);
-    try {
-      const logged = await authService.login(email, password);
-      setUser(logged);
-      return logged;
-    } finally {
-      // Sempre, anche in caso di errore: cosi il pulsante non resta bloccato.
-      setLoading(false);
-    }
+    const logged = await authService.login(email, password);
+    setUser(logged);
+    return logged;
   }, []);
 
   const register = useCallback(async (email, password, displayName) => {
-    setLoading(true);
-    try {
-      const created = await authService.register(email, password, displayName);
-      setUser(created);
-      return created;
-    } finally {
-      setLoading(false);
-    }
+    const created = await authService.register(email, password, displayName);
+    setUser(created);
+    return created;
+  }, []);
+
+  const resetPassword = useCallback(async (email) => {
+    return authService.resetPassword(email);
+  }, []);
+
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    return authService.changePassword(currentPassword, newPassword);
+  }, []);
+
+  const loginWithGoogle = useCallback(async () => {
+    const logged = await authService.loginWithGoogle();
+    setUser(logged);
+    return logged;
   }, []);
 
   const logout = useCallback(async () => {
@@ -76,8 +82,32 @@ export function AuthProvider({ children }) {
     setUser((prev) => (prev ? { ...prev, profile } : prev));
   }, [user]);
 
-  const value = { user, loading, login, register, logout, completeProfile };
+  // Identita' stabile fra un render e l'altro: i consumatori si aggiornano solo
+  // quando cambia davvero uno dei valori.
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      login,
+      register,
+      resetPassword,
+      changePassword,
+      loginWithGoogle,
+      logout,
+      completeProfile,
+    }),
+    [
+      user,
+      loading,
+      login,
+      register,
+      resetPassword,
+      changePassword,
+      loginWithGoogle,
+      logout,
+      completeProfile,
+    ]
+  );
 
-  // Da React 19 il context stesso fa da provider: niente piu' <AuthContext.Provider>.
   return <AuthContext value={value}>{children}</AuthContext>;
 }

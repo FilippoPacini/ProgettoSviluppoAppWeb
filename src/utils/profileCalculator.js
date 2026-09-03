@@ -52,8 +52,10 @@ export function computeProfile(answers, questions, interests = []) {
     else if (q.axis === 'ritmo') ritmo += opt.weight;
   }
 
-  const primo = approccio < 0 ? 'analitico' : 'creativo';
-  const secondo = ritmo < 0 ? 'costante' : 'esplosivo';
+  // A parita' di punteggio scelgo il polo "analitico"/"costante": descrive meglio
+  // chi non ha una tendenza marcata.
+  const primo = approccio <= 0 ? 'analitico' : 'creativo';
+  const secondo = ritmo <= 0 ? 'costante' : 'esplosivo';
   // Gli interessi (settori scelti) restano sul profilo: personalizzano coach e citazione.
   return { ...LABELS[`${primo}-${secondo}`], interests };
 }

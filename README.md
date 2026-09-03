@@ -1,275 +1,88 @@
 # HabitForge
 
-App di crescita personale: tracciamento di **abitudini** con streak e calendario
-heatmap, **obiettivi** misurabili, **diario**, **test di personalità** e un **coach AI**
-che dà consigli su misura.
+App di crescita personale. Si creano abitudini ricorrenti e si spuntano ogni giorno, con
+streak e calendario heatmap; si definiscono obiettivi misurabili, collegabili a un'abitudine
+o aggiornati a mano; si tiene un diario. Un test di personalità profila l'utente e un coach
+AI dà consigli sui dati reali dell'account. Ogni giorno l'app genera un report della giornata
+e una citazione.
 
-Progetto d'esame per il corso **Sviluppo Applicazioni Web (SAW)** — Laurea triennale
-in Informatica, Università di Pisa.
+Progetto d'esame per il corso di Sviluppo di Applicazioni Web, Università di Pisa.
 
-## Applicazione online e credenziali di prova
+## Applicazione online
 
-L'app è pubblicata su Firebase Hosting:
+**https://habitforge-saw26.web.app**
 
-- **https://habitforge-saw26.web.app**
-
-È disponibile un **account demo pre-popolato** con circa 6 mesi di dati (dal 1° gennaio
-2026), così heatmap, streak, obiettivi, diario, profilo e coach si vedono subito in
-condizioni realistiche. Credenziali:
+Account di prova, con circa sei mesi di dati già inseriti:
 
 - **Email:** `filippo.pacini@habitforge.app`
 - **Password:** `pacini30`
 
-In alternativa si può creare un account nuovo dalla schermata di registrazione.
+In alternativa ci si può registrare o entrare con Google.
 
-## Avviare l'app in locale
+## Avvio in locale
 
-Serve **Node.js 18+** e npm.
+Serve Node.js 18 o superiore.
 
-1. Clona il repo.
-2. Installa le dipendenze:
-   ```bash
-   npm install
-   ```
-3. Copia `.env.example` in `.env.local` e riempi le variabili con la configurazione del
-   tuo progetto Firebase e la chiave Gemini:
-   - La `firebaseConfig` si trova in: **Console Firebase → Impostazioni progetto → Le tue
-     app → Configurazione SDK**.
-   - La chiave Gemini si genera su **https://aistudio.google.com/app/apikey**.
-   - `.env.local` è ignorato da git (`*.local` nel `.gitignore`): le chiavi non finiscono
-     nel repository. In fase di consegna il file `.env` viene allegato alla mail.
-4. Avvia il server di sviluppo:
-   ```bash
-   npm run dev
-   ```
-   L'app si apre su http://localhost:5173.
-
-## Come usare l'app
-
-Al primo accesso, dopo la registrazione, l'app propone un **test di personalità** che
-genera un profilo (es. *Analitico-Costante*) e raccoglie i tuoi interessi: servono a
-personalizzare il tono del coach e la citazione del giorno. Dalla **Dashboard** spunti le
-abitudini di oggi; le sezioni **Abitudini**, **Obiettivi**, **Diario**, **Coach** e
-**Profilo** sono raggiungibili dalla barra laterale.
-
-Di seguito tre percorsi di esempio per vedere le funzionalità.
-
-Due cose utili da sapere prima di iniziare. Ogni abitudine si **modifica** (icona matita) e
-si può **mettere in pausa** (icona pausa) invece di cancellarla: i giorni di pausa non
-contano come mancati e lo storico resta quello che era. E il pulsante **i** accanto ai
-titoli di Dashboard, Abitudini e Obiettivi apre una guida breve che spiega come sono
-calcolati i numeri di quella pagina.
-
-### Caso d'uso 1 — Collega un'abitudine a un obiettivo e guarda il progresso avanzare da solo
-
-1. Vai su **Abitudini → + Nuova abitudine** e crea *Leggere 20 minuti* (frequenza
-   giornaliera).
-2. Vai su **Obiettivi → + Nuovo obiettivo** e compila:
-   - **Titolo:** `Costanza nella lettura`
-   - **Collega a:** `📚 Leggere 20 minuti`
-   - **Quante volte:** `30` — l'unità si compila da sola: `20 minuti` se l'hai indicata
-     sull'abitudine, altrimenti `completamenti`. Sotto compare l'equivalenza
-     (`30 volte × 20 minuti = 600 minuti`).
-   - **Scadenza:** una data fra circa un mese
-3. Torna in **Dashboard** e spunta *Leggere 20 minuti* per oggi.
-4. Riapri **Obiettivi**: la barra di avanzamento dell'obiettivo si è mossa da sola. Il
-   progresso di un obiettivo collegato conta i completamenti di quell'abitudine tra la
-   creazione e la scadenza — non devi aggiornarlo a mano. (Gli obiettivi *manuali*, non
-   collegati, si aggiornano invece a mano dal pulsante **Aggiorna progresso** sulla card.)
-
-### Caso d'uso 2 — Imposta 3 obiettivi e "senti" cosa dice il coach
-
-1. In **Obiettivi** creane tre, per esempio:
-   - `Leggere 10 libri` → Target `10` / `libri`, **Manuale** (aggiorni tu il progresso a libro finito)
-   - `30 giorni di camminata` → collegato all'abitudine *Camminata 30 minuti*
-   - `Meditare 20 volte questo mese` → collegato all'abitudine *Meditazione*
-2. Vai su **Coach** e tocca il suggerimento rapido **"I miei obiettivi sono realistici?"**
-   (oppure scrivi una domanda libera).
-3. Il coach incrocia i tuoi obiettivi con i completamenti reali degli ultimi 30 giorni e
-   risponde su misura, chiamandoti per nome. Prova anche **"Come sto andando questa
-   settimana?"** o **"Quali abitudini sto trascurando?"**.
-
-### Caso d'uso 3 — Esegui il test di personalità e nota come cambia il coach
-
-1. Da **Profilo → Fai il test** (o al primo accesso) completa il questionario: scegli i
-   settori d'interesse e rispondi alle domande.
-2. Viene generato un **profilo** (es. *Analitico-Costante*) con i tuoi interessi, visibile
-   in Profilo.
-3. Apri **Coach**: l'intestazione ora recita *"Consigli su misura per il tuo profilo
-   Analitico-Costante"* e le risposte adattano il tono al profilo.
-4. In più, la **citazione del giorno** in Dashboard viene personalizzata sui tuoi obiettivi
-   attivi e interessi (quando non hai obiettivi attivi arriva invece da una lista locale di
-   autori di pubblico dominio).
-
-## PWA: installazione, offline, notifiche e verifica
-
-L'app è una Progressive Web App. Il service worker e il manifest vengono generati in fase
-di build; la PWA è attiva sulla versione compilata (produzione o `npm run preview`), non
-con `npm run dev`.
-
-**Installazione.** Apri il sito in Chrome desktop: a destra nella barra degli indirizzi
-compare l'icona *Installa*. Cliccala e l'app si apre in una finestra standalone con la sua
-icona. Su Android, dal menu del browser scegli *Aggiungi a schermata Home*.
-
-**Uso offline.** La persistenza di Firestore è abilitata esplicitamente in
-`src/services/firebase.js` (`initializeFirestore` con `persistentLocalCache` e
-`persistentMultipleTabManager`): di default è disattivata, e senza di essa cache e coda
-delle scritture vivrebbero solo in memoria, quindi andrebbero perse a ogni ricarica.
-`persistentMultipleTabManager` sincronizza la cache fra più schede aperte, evitando
-l'errore `failed-precondition`.
-
-La prova che conta è questa: da DevTools → *Network* attiva *Offline* e **ricarica la
-pagina**. Devi ritrovare i tuoi dati, non una schermata vuota. Le modifiche fatte offline
-restano in coda su IndexedDB e vengono sincronizzate quando la rete torna.
-
-**Notifiche.** Vai su **Profilo → Promemoria giornaliero**, attiva l'interruttore (il
-browser chiede il permesso in quel momento) e scegli un orario; con **Invia una notifica di
-prova** verifichi subito che funzionino. Il promemoria è una notifica locale: scatta
-all'orario impostato mentre l'app è aperta o installata e si ripianifica per il giorno dopo.
-
-**Verifica.** Da Chrome DevTools: *Application → Manifest* mostra nome, icone e
-`display: standalone`; *Application → Service Workers* mostra il worker attivo; un giro di
-*Lighthouse* (categoria PWA) conferma installabilità e presenza del service worker.
-
-## Scelte tecniche da segnalare
-
-**Cambiare i giorni di un'abitudine vale anche per il passato.** La heatmap dei mesi
-scorsi si ricalcola con i giorni nuovi. Tenere la storia dei giorni, come si fa per le
-pause, sarebbe la soluzione completa ed è sproporzionata rispetto al progetto: il caso
-è raro e il costo alto. Le **pause** invece hanno lo storico (`pauses: [{from, to}]`)
-proprio perché sono un'operazione ordinaria: con un semplice flag attivo/non attivo, alla
-ripresa il periodo di pausa tornerebbe a contare come giorni mancati e i dati passati
-cambierebbero da soli.
-
-**React 19: cosa si usa e cosa no.** I context usano la forma `<MyContext value={...}>`
-e `use(MyContext)`. `useOptimistic` è applicato alla sola spunta dell'abitudine: Firestore
-fa già latency compensation, quindi serve a rendere visibile il rollback quando la
-scrittura viene rifiutata, non a velocizzare il caso normale. Non sono adottati:
-
-- **React Server Components**, che richiedono un framework che li supporti (Next.js);
-  HabitForge è client-only su Vite con Firebase come backend.
-- **`useActionState` / `useFormStatus` / form actions**, pensati per form che inviano a
-  un'azione; qui i form scrivono su Firestore tramite l'SDK e hanno già stato di invio e
-  di errore.
-- **`Suspense`**, utile con letture che sospendono; le nostre sono sottoscrizioni
-  `onSnapshot`, che non sospendono, e il caricamento è già gestito dal `DataContext`.
-
-**ErrorBoundary senza dipendenze.** Le slide suggeriscono il pacchetto
-`react-error-boundary`; qui il boundary è un componente a classe di poche righe in
-`src/components/UI/ErrorBoundary.jsx`, per non aggiungere una dipendenza. Avvolge anche i
-provider, così intercetta gli errori che nascono fuori dalle pagine.
-
-**Security Rules.** Oltre al controllo di proprietà ci sono validazioni di contenuto su
-`habits` e `completions`. Due vincoli hanno guidato la scrittura: le regole si combinano
-in OR, quindi una `match /{document=**}` permissiva renderebbe inutile qualsiasi regola
-più severa (per questo ogni collezione è dichiarata esplicitamente); e si usa `hasAll()`
-sui campi obbligatori invece di `hasOnly()`, perché elencare i campi ammessi bloccherebbe
-l'app al primo campo nuovo.
-
-## Deploy
-
-Il progetto si ricostruisce e si pubblica con la CLI di Firebase (`firebase-tools`,
-installabile globalmente con `npm install -g firebase-tools`):
-
-```bash
-npm run build      # genera la cartella dist/
-firebase login     # solo la prima volta
-firebase deploy    # pubblica hosting + Security Rules Firestore
+```
+npm install
+npm run dev
 ```
 
-Dopo il deploy l'app è raggiungibile su `https://habitforge-saw26.web.app` e
-`https://habitforge-saw26.firebaseapp.com`.
+Il file `.env.local` con le chiavi Firebase e Gemini è allegato alla consegna: va copiato
+nella cartella del progetto prima di avviare. L'app parte su `http://localhost:5173`.
 
-## Sicurezza
+## Tecnologie
 
-**Security Rules.** `firestore.rules` isola ogni utente al proprio sotto-albero
-`users/{uid}` con la condizione `request.auth.uid == uid`: nessuno può leggere o scrivere
-i dati di un altro utente. Ogni collezione è dichiarata esplicitamente invece di usare una
-wildcard, perché le regole si combinano in OR e una wildcard permissiva annullerebbe le
-validazioni di contenuto su `habits` e `completions` (vedi *Scelte tecniche da segnalare*).
+React con Vite e react-router-dom, stili con CSS Modules. Firebase per autenticazione,
+database (Firestore) e hosting. Coach, report e citazione usano l'API di Google Gemini.
+L'app è una PWA costruita con `vite-plugin-pwa`.
 
-Le regole si pubblicano con `firebase deploy --only firestore:rules`, oppure con il
-`firebase deploy` completo qui sopra. Conviene provarle prima nel simulatore della console
-Firebase: una scrittura con `name` vuoto o `frequency` inventata deve essere negata.
+## Come è organizzato il codice
 
-**Chiave Gemini.** La `VITE_GEMINI_API_KEY` finisce nel bundle client (come la config
-Firebase): la si mette in sicurezza restringendo l'origine, non nascondendola. Dalla Google
-Cloud Console:
+```
+src/pages/        una pagina per ogni rotta
+src/components/   componenti riusabili, ognuno con il suo CSS Module
+src/context/      stato condiviso: utente (AuthContext) e dati (DataContext)
+src/hooks/        accesso ai context e alle preferenze locali
+src/services/     dialogo con l'esterno: Firebase, Firestore, Gemini, notifiche
+src/utils/        calcoli puri: date, streak, heatmap, statistiche, obiettivi, profilo
+src/data/         domande del test di personalità e citazioni
+```
 
-1. **APIs & Services → Credentials** → seleziona la chiave.
-2. **Application restrictions → HTTP referrers**, aggiungi:
-   - `https://habitforge-saw26.web.app/*`
-   - `https://habitforge-saw26.firebaseapp.com/*`
-   - `http://localhost:5173/*` (solo per lo sviluppo)
-3. **API restrictions** → limita a **Generative Language API**.
+Una mappa più dettagliata, cartella per cartella, è in `presentazioneStructure.html`, da
+aprire nel browser.
 
-Il modello usato è `gemini-2.5-flash` (endpoint in `src/services/gemini.js`).
+## Modello dati
 
-## Modello dati (Firestore)
-
-Tutto vive sotto il documento dell'utente `users/{uid}`: i campi "singoli" come attributi
-del documento, i dati che crescono nel tempo come sottocollezioni. Non esistono collezioni
-a livello root oltre `users`. Le letture sono realtime (`onSnapshot`).
+Ogni utente ha un documento sotto `users/{uid}`: i dati singoli come campi del documento,
+quelli che crescono nel tempo come sottocollezioni.
 
 ```
 users/{uid}
   ├── email, displayName, createdAt
-  ├── profile      { key, name, tagline, description, interests[] }   // test di personalità
-  ├── dailyReport  { text, date, updatedAt, scheduledCount }          // report del giorno (AI)
-  └── dailyQuote   { text, author|null, date, source: 'local'|'ai' }  // citazione del giorno
-users/{uid}/habits/{habitId}          { name, emoji, frequency, days[], color, createdAt,
-                                        active, pauses[{from,to}], measure{value,unit}|null }
-users/{uid}/completions/{YYYY-MM-DD}  { habits: string[] }            // doc-id = data
+  ├── profile      { key, name, tagline, description, interests[] }
+  ├── dailyReport  { text, date, updatedAt, scheduledCount }
+  └── dailyQuote   { text, author|null, date, source: 'local'|'ai' }
+users/{uid}/habits/{habitId}          { name, emoji, frequency, days[], color, active,
+                                        pauses[{from,to}], measure{value,unit}|null, createdAt }
+users/{uid}/completions/{YYYY-MM-DD}  { habits: string[] }
 users/{uid}/goals/{goalId}            { title, description, target{value,unit}, deadline,
-                                        linkedHabitId, unitPerCompletion{value,unit}|null,
-                                        progress, createdAt }
+                                        linkedHabitId, unitPerCompletion|null, progress }
 users/{uid}/diary/{entryId}           { text, date }
 ```
 
-Campi meno ovvi:
+## Scelte di progetto
 
-- `habits.measure` — quanto vale **un** completamento (es. `{ value: 10, unit: 'minuti' }`).
-  È facoltativo e serve agli obiettivi collegati: senza, l'obiettivo conta `completamenti`.
-- `habits.pauses` — storico delle pause, `from` incluso e `to` escluso (`to: null` = pausa
-  in corso). `active` è lo stato corrente, ridondante ma comodo per filtrare la lista senza
-  scorrere l'array a ogni render.
-- `goals.unitPerCompletion` — copia della `measure` dell'abitudine al momento della
-  creazione dell'obiettivo. È una fotografia di proposito: se l'abitudine cambia misura, un
-  obiettivo vecchio deve continuare a significare quello che significava allora.
-- `dailyReport.scheduledCount` — quante abitudini erano previste quando il report è stato
-  generato. Se il numero cambia, il testo è superato e viene rigenerato.
+I completamenti sono indicizzati per data e aggiornati con `arrayUnion` e `arrayRemove`, così
+due schede aperte insieme non si sovrascrivono. Streak, progresso e stato degli obiettivi non
+vengono salvati ma calcolati dai completamenti, per non tenere valori che possano andare fuori
+sincrono. Il denominatore delle percentuali è il numero di abitudini previste in quel giorno,
+quindi saltare un giorno non programmato non interrompe la streak.
 
-Note:
+Lo stato dell'app arriva in tempo reale da Firestore tramite `onSnapshot`; le operazioni di
+scrittura si limitano a scrivere. Le preferenze del singolo dispositivo stanno in
+`localStorage`, i dati dell'utente su Firestore.
 
-- **Streak** e **progresso/stato degli obiettivi** non sono salvati: sono derivati dai
-  completamenti (`src/utils/streakCalculator.js`, `src/utils/goalUtils.js`), così non
-  possono andare fuori sincrono. Per lo stesso motivo `goals` **non** ha un campo `status`:
-  lo stato lo calcola `goalStatus()` da target, progresso e scadenza.
-- Un obiettivo con `linkedHabitId` avanza contando i completamenti dell'abitudine collegata;
-  uno *manuale* usa il campo `progress`, aggiornato dal pulsante **Aggiorna progresso**.
-- I campi `active`, `pauses`, `measure` e `unitPerCompletion` sono opzionali: i documenti
-  creati prima della loro introduzione continuano a funzionare senza migrazione.
-
-## Struttura del progetto
-
-```
-src/
-├── components/   Componenti UI e di feature (Heatmap, GoalCard, HabitCard, HabitForm,
-│                 DailyReport, DailyQuote, Reminder, Layout, UI generici…)
-├── pages/        Una pagina per route (Dashboard, Habits, Goals, Diary, Coach, Profile,
-│                 PersonalityTest, Login, Register) più DevSeed e SetupCheck, attive
-│                 solo in sviluppo
-├── hooks/        Custom hooks (useAuth, useHabits, useGoals, useDiary, useCoach,
-│                 useReminderPref, useSidebarPref)
-├── context/      Provider (AuthContext, DataContext)
-├── services/     Backend: firebase, auth, firestore, gemini, notifications
-├── data/         Dati statici (domande del test, citazioni locali)
-├── utils/        Funzioni pure (schedulazione, streak, heatmap, statistiche, profilo,
-│                 obiettivi, date)
-└── styles/       Stili globali e variabili del tema
-
-firestore.rules   Security Rules
-firebase.json     Config Hosting + Firestore
-.firebaserc       Progetto di default (habitforge-saw26)
-.env.example      Template delle variabili d'ambiente
-```
+Le Security Rules danno a ciascun utente accesso solo ai propri dati, dichiarando ogni
+collezione singolarmente. Al coach viene passato il profilo di personalità come indicazione
+di tono, mai il contenuto del diario.

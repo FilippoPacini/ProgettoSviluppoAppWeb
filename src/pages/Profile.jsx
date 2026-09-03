@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useHabits } from '../hooks/useHabits';
 import { Button } from '../components/UI/Button';
+import { ChangePassword } from '../components/Profile/ChangePassword';
 import { ReminderSettings } from '../components/Reminder/ReminderSettings';
 import { formatLong } from '../utils/dateUtils';
 import { longestStreak } from '../utils/streakCalculator';
@@ -90,6 +91,8 @@ export function Profile() {
           </>
         )}
       </section>
+
+      <ChangePassword />
 
       <ReminderSettings />
     </div>

@@ -73,3 +73,19 @@
     animation: none;
   }
 }
+
+/* Velo di chiusura del pannello mobile: solo sotto gli 860px, sotto la sidebar. */
+.backdrop { display: none; }
+
+@media (max-width: 860px) {
+  .backdrop {
+    display: block;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 39;
+  }
+}

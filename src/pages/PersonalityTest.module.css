@@ -65,6 +65,29 @@
   background-color: var(--color-primary-bg);
 }
 
+/* Opzione selezionata. */
+.optionActive {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+  font-weight: 600;
+}
+
+.back {
+  display: block;
+  margin: var(--spacing-lg) auto 0;
+  padding: var(--spacing-sm);
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.back:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
 /* Esito */
 .resultBadge {
   display: inline-block;

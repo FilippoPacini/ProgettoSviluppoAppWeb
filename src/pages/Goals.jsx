@@ -296,7 +296,7 @@ export function Goals() {
           label="Titolo"
           value={form.title}
           onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-          placeholder="Es. Leggere di piu'"
+          placeholder="Es. Leggere di più"
           error={error}
         />
         <TextArea
