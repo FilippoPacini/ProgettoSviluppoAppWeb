@@ -79,10 +79,12 @@ vengono salvati ma calcolati dai completamenti, per non tenere valori che possan
 sincrono. Il denominatore delle percentuali è il numero di abitudini previste in quel giorno,
 quindi saltare un giorno non programmato non interrompe la streak.
 
-Lo stato dell'app arriva in tempo reale da Firestore tramite `onSnapshot`; le operazioni di
-scrittura si limitano a scrivere. Le preferenze del singolo dispositivo stanno in
-`localStorage`, i dati dell'utente su Firestore.
+L'app è una single-page application: il routing è gestito lato client da react-router, e
+Firebase Hosting rimanda ogni percorso a `index.html`. Lo stato non viene ricaricato a ogni
+navigazione ma vive nei due context, alimentati in tempo reale da Firestore tramite
+`onSnapshot`; le operazioni di scrittura si limitano a scrivere, e la vista si aggiorna da
+sé alla ricezione dello snapshot.
 
 Le Security Rules danno a ciascun utente accesso solo ai propri dati, dichiarando ogni
-collezione singolarmente. Al coach viene passato il profilo di personalità come indicazione
-di tono, mai il contenuto del diario.
+collezione singolarmente. La chiave di Gemini è vincolata per dominio, così resta inutile
+se estratta dal bundle.
