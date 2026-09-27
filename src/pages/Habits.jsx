@@ -28,7 +28,7 @@ const GUIDE = [
   'Il campo "quanto vale un completamento" (per esempio 10 minuti) serve a collegare gli obiettivi: 30 volte da 10 minuti fanno 300 minuti.',
   'La heatmap in fondo mostra l\'anno intero: piu\' scura e\' la cella, piu\' abitudini previste hai completato quel giorno.',
 ];
-
+//sto cambiando il testo
 export function Habits() {
   const {
     habits, completions, loading,
